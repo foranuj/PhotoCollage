@@ -31,6 +31,7 @@ from photocollage.dialogs.ConfigSelectorDialog import ConfigSelectorDialog
 from photocollage.dialogs.SettingsDialog import SettingsDialog
 
 from data.readers.default import corpus_processor
+from data.readers.SingleCorpusReader import single_corpus_processor
 from yearbook.Yearbook import create_yearbook_metadata
 
 gi.require_version('Gtk', '3.0')
@@ -318,14 +319,14 @@ class MainWindow(Gtk.Window):
         response = dialog.run()
         if response == Gtk.ResponseType.OK:
             self.yearbook_parameters = dialog.config_parameters
-            self.corpus = corpus_processor(self.yearbook_parameters["processed_corpus_file"])
+            self.corpus = single_corpus_processor(self.yearbook_parameters["processed_corpus_file"])
 
             # Read the config file
             self.yearbook = create_yearbook_metadata(self.yearbook_parameters["config_file"], "", "")
             # Reset page to first
             self.current_page_index = 0
             current_page = self.yearbook.pages[self.current_page_index]
-            page_images = self.choose_page_images_for_child(current_page, self.child)
+            page_images = self.choose_page_images(current_page)
             self.update_photolist(current_page, page_images)
 
             dialog.destroy()
@@ -334,15 +335,14 @@ class MainWindow(Gtk.Window):
         else:
             dialog.destroy()
 
-    def choose_page_images_for_child(self, page, child, max_count=12):
-        corpus_dir = self.yearbook_parameters["corpus_dir"]
+    def choose_page_images(self, page, max_count=12):
 
         if not page.personalized:
             print("Load image as is, %s, %s" % (page.event_name, page.image))
             images = [page.image]
         else:
             print("Working on: (%s, %s, %s)" % (page.image, page.event_name, page.number))
-            images = self.corpus.get_filenames_child_images_for_event(child, page.event_name, corpus_dir)
+            images = self.corpus.get_child_images_for_event(page.event_name)
 
         return images[:max_count]
 
@@ -376,7 +376,7 @@ class MainWindow(Gtk.Window):
         try:
             page_collage = yearbook_page.history[yearbook_page.history_index]
         except IndexError:
-            page_images = self.choose_page_images_for_child(yearbook_page, self.child)
+            page_images = self.choose_page_images(yearbook_page)
             self.update_photolist(yearbook_page, page_images)
 
         # If the desired ratio changed in the meantime (e.g. from landscape to
@@ -453,6 +453,7 @@ class MainWindow(Gtk.Window):
         # Display a "please wait" dialog and do the job.
         compdialog = ComputingDialog(self)
         count_completed = 0
+
         def on_update(img, fraction_complete):
             compdialog.update(fraction_complete)
 
@@ -464,12 +465,10 @@ class MainWindow(Gtk.Window):
                 print("Time to destroy this dialog, and save the final file")
                 all_final_images = [page.final_img for page in self.yearbook.pages]
                 all_final_images[0].save(os.path.join(output_dir, self.child + "_version0.pdf"), save_all=True,
-                                    append_images=all_final_images[1:])
+                                         append_images=all_final_images[1:])
                 compdialog.destroy()
 
                 return
-
-
 
         for yearbook_page in self.yearbook.pages:
             out_file = os.path.join(self.yearbook_parameters['output_dir'], str(yearbook_page.number) + ".jpg")
@@ -509,7 +508,7 @@ class MainWindow(Gtk.Window):
         current_page = self.yearbook.pages[self.current_page_index]
         if not current_page.history:
             max_count = self.yearbook_parameters['max_count']
-            new_page_images = self.choose_page_images_for_child(current_page, self.child, 100)
+            new_page_images = self.choose_page_images(current_page, 100)
             remaining_images = [x for x in new_page_images if x not in used_images][:max_count]
             self.update_photolist(current_page, remaining_images)
 
