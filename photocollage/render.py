@@ -39,7 +39,7 @@ FONT_DIR = os.path.join("/Users", getpass.getuser(), "GoogleDrive", "Fonts")
 TITLE_FONT_OPEN_SANS = ImageFont.truetype(os.path.join(FONT_DIR, "open-sans/OpenSans-Bold.ttf"), 100)
 TEXT_FONT_SMALL = ImageFont.truetype(os.path.join(FONT_DIR, "open-sans/OpenSans-Bold.ttf"), 50)
 TITLE_FONT_MOHAVE = ImageFont.truetype(os.path.join(FONT_DIR, "Mohave/Mohave-SemiBold.ttf"), 100)
-
+TITLE_FONT_SELIMA = ImageFont.truetype(os.path.join(FONT_DIR, "selima/selima_.otf"), 100)
 # Try to continue even if the input file is corrupted.
 # See issue at https://github.com/adrienverge/PhotoCollage/issues/65
 PIL.ImageFile.LOAD_TRUNCATED_IMAGES = True
@@ -194,7 +194,23 @@ class RenderingTask(Thread):
                 draw.line(xY + Xy, fill=color)
         return canvas
 
-    def draw_borders(self, canvas):
+    def draw_publishing_borders(self, canvas, offset):
+        x_offset = offset[0]
+        y_offset = offset[1]
+        border = self.border_width - 1
+        color = (255, 255, 255, 0)  # self.border_color
+        draw = PIL.ImageDraw.Draw(canvas, 'RGBA')
+        for col in self.page.cols:
+            # Draw horizontal borders
+            for c in col.cells[1:]:
+                xy = (col.x + x_offset, y_offset + c.y - border / 2)
+                XY = (col.x + col.w + x_offset, y_offset + c.y + border / 2)
+                draw.rectangle(xy + XY, color)
+
+        return canvas
+
+
+    def draw_borders(self, canvas, offset=(0, 0)):
         if self.yearbook_page.is_locked():
             return
 
@@ -207,23 +223,25 @@ class RenderingTask(Thread):
         color = (255, 255, 255, 0)  # self.border_color
 
         draw = PIL.ImageDraw.Draw(canvas, 'RGBA')
-        draw.rectangle((0, 0) + (border, H), color)
-        draw.rectangle((W - border, 0) + (W, H), color)
-        draw.rectangle((0, 0) + (W, border), color)
-        draw.rectangle((0, H - border) + (W, H), color)
+        x_offset = offset[0]
+        y_offset = offset[1]
+        draw.rectangle((x_offset, y_offset) + (border, H), color)
+        draw.rectangle((W - border, y_offset) + (W, H), color)
+        draw.rectangle((x_offset, y_offset) + (W, border), color)
+        draw.rectangle((x_offset, H - border) + (W, H), color)
 
         for col in self.page.cols:
             # Draw horizontal borders
             for c in col.cells[1:]:
-                xy = (col.x, c.y - border / 2)
-                XY = (col.x + col.w, c.y + border / 2)
+                xy = (col.x + x_offset, y_offset + c.y - border / 2)
+                XY = (col.x + col.w + x_offset, y_offset + c.y + border / 2)
                 draw.rectangle(xy + XY, color)
             # Draw vertical borders
             if col.x > 0:
                 for c in col.cells:
                     if not c.is_extension():
-                        xy = (col.x - border / 2, c.y)
-                        XY = (col.x + border / 2, c.y + c.h)
+                        xy = (x_offset + col.x - border / 2, y_offset + c.y)
+                        XY = (x_offset + col.x + border / 2, y_offset + c.y + c.h)
                         draw.rectangle(xy + XY, color)
 
         return canvas
@@ -333,26 +351,32 @@ class RenderingTask(Thread):
 
             if self.output_file:
                 print("Saving image at ...", self.output_file)
+                offset = (0, 0)
                 if self.full_resolution:
                     background = PIL.Image.open(self.yearbook_page.image).convert("RGBA")
                     new_background = background.resize(IMAGE_WITH_BLEED_SIZE)
+
                     if not self.yearbook_page.page_type.startswith('Static'):
                         if self.yearbook_page.title is not None and len(self.yearbook_page.title) > 2:
-
+                            offset = (75, 180)
                             # Right-hand size page, which will have a title
                             dashed_img_draw = DashedImageDraw(new_background)
-
-                            w, h = TITLE_FONT_MOHAVE.getsize(self.yearbook_page.title)
+                            font_to_use = TITLE_FONT_SELIMA
+                            w, h = font_to_use.getsize(self.yearbook_page.title)
                             dashed_img_draw.text((int((canvas.size[0] - w) / 2) + 75, 75),
-                                                 self.yearbook_page.title, (255, 255, 255), font=TITLE_FONT_MOHAVE)
+                                                 self.yearbook_page.title, (255, 255, 255), font=font_to_use)
 
-                            new_background.paste(canvas, (75, 180), mask=canvas)
+                            new_background.paste(canvas, offset, mask=canvas)
+
                             dashed_img_draw.text((int(canvas.size[0]) - 50, int(canvas.size[1]) + 75),
                                                  str(self.yearbook_page.number),
                                                  (255, 255, 255), font=TEXT_FONT_SMALL)
                         else:
+                            offset = (75, 75)
                             # Left-hand size page, which will have the image starting at 75,75
-                            new_background.paste(canvas, (75, 75), mask=canvas)
+                            new_background.paste(canvas, offset, mask=canvas)
+
+                        #self.draw_publishing_borders(new_background, offset)
                 else:
                     new_background = canvas
 
