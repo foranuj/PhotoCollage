@@ -39,7 +39,7 @@ FONT_DIR = os.path.join("/Users", getpass.getuser(), "GoogleDrive", "Fonts")
 TITLE_FONT_OPEN_SANS = ImageFont.truetype(os.path.join(FONT_DIR, "open-sans/OpenSans-Bold.ttf"), 100)
 TEXT_FONT_SMALL = ImageFont.truetype(os.path.join(FONT_DIR, "open-sans/OpenSans-Bold.ttf"), 50)
 TITLE_FONT_MOHAVE = ImageFont.truetype(os.path.join(FONT_DIR, "Mohave/Mohave-SemiBold.ttf"), 100)
-TITLE_FONT_SELIMA = ImageFont.truetype(os.path.join(FONT_DIR, "selima/selima_.otf"), 100)
+TITLE_FONT_SELIMA = ImageFont.truetype(os.path.join(FONT_DIR, "selima/selima_.otf"), 135)
 # Try to continue even if the input file is corrupted.
 # See issue at https://github.com/adrienverge/PhotoCollage/issues/65
 PIL.ImageFile.LOAD_TRUNCATED_IMAGES = True
@@ -368,13 +368,15 @@ class RenderingTask(Thread):
 
                             new_background.paste(canvas, offset, mask=canvas)
 
-                            dashed_img_draw.text((int(canvas.size[0]) - 50, int(canvas.size[1]) + 75),
-                                                 str(self.yearbook_page.number),
-                                                 (255, 255, 255), font=TEXT_FONT_SMALL)
                         else:
                             offset = (75, 75)
                             # Left-hand size page, which will have the image starting at 75,75
                             new_background.paste(canvas, offset, mask=canvas)
+
+                        if self.yearbook_page.number % 2 != 0:
+                            dashed_img_draw.text((int(canvas.size[0]) - 50, int(canvas.size[1]) + 75),
+                                                 str(self.yearbook_page.number),
+                                                 (255, 255, 255), font=TEXT_FONT_SMALL)
 
                         #self.draw_publishing_borders(new_background, offset)
                 else:
