@@ -53,10 +53,10 @@ class TestDefaultReader(unittest.TestCase):
         assert len(corpus.get_images_with_tags_strict(tags_list)) == 0
 
     def test_vargas_images(self):
-        tags_list = ['VargasElementary', "Classroom"]
+        tags_list = ['VargasElementary', "ResourceIntervention"]
         corpus = corpus_processor(school_name="VargasElementary")
         images_with_tags = corpus.get_images_with_tags_strict(tags_list)
-        assert len(images_with_tags) == 0
+        assert len(images_with_tags) == 34
 
     def test_longer_lists(self):
         tags_list = ["Sunshine",

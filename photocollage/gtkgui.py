@@ -929,7 +929,9 @@ class MainWindow(Gtk.Window):
                 tag_list = get_tag_list_for_page(self.current_yearbook, page)
                 tags = get_unique_list_insertion_order(tag_list)
                 if self.current_yearbook.child is None:
+                    print("Retrieving images with tags %s " % tags)
                     candidate_images = self.corpus.get_images_with_tags_strict(tags)
+                    print(len(candidate_images))
                 else:
                     candidate_images = self.corpus.get_images_for_child(tags, self.current_yearbook.child)
 
