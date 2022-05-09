@@ -39,7 +39,7 @@ FONT_DIR = os.path.join("/Users", getpass.getuser(), "GoogleDrive", "Fonts")
 TITLE_FONT_OPEN_SANS = ImageFont.truetype(os.path.join(FONT_DIR, "open-sans/OpenSans-Bold.ttf"), 100)
 TEXT_FONT_SMALL = ImageFont.truetype(os.path.join(FONT_DIR, "open-sans/OpenSans-Bold.ttf"), 50)
 TITLE_FONT_MOHAVE = ImageFont.truetype(os.path.join(FONT_DIR, "Mohave/Mohave-SemiBold.ttf"), 100)
-TITLE_FONT_SELIMA = ImageFont.truetype(os.path.join(FONT_DIR, "selima/selima_.otf"), 100)
+TITLE_FONT_SELIMA = ImageFont.truetype(os.path.join(FONT_DIR, "selima/selima_.otf"), 135)
 # Try to continue even if the input file is corrupted.
 # See issue at https://github.com/adrienverge/PhotoCollage/issues/65
 PIL.ImageFile.LOAD_TRUNCATED_IMAGES = True
@@ -351,16 +351,18 @@ class RenderingTask(Thread):
 
             if self.output_file:
                 print("Saving image at ...", self.output_file)
+                background = PIL.Image.open(self.yearbook_page.image).convert("RGBA")
+                dashed_img_draw = DashedImageDraw(background)
+
                 offset = (0, 0)
                 if self.full_resolution:
-                    background = PIL.Image.open(self.yearbook_page.image).convert("RGBA")
                     new_background = background.resize(IMAGE_WITH_BLEED_SIZE)
-
+                    dashed_img_draw = DashedImageDraw(new_background)
                     if not self.yearbook_page.page_type.startswith('Static'):
                         if self.yearbook_page.title is not None and len(self.yearbook_page.title) > 2:
                             offset = (75, 180)
                             # Right-hand size page, which will have a title
-                            dashed_img_draw = DashedImageDraw(new_background)
+
                             font_to_use = TITLE_FONT_SELIMA
                             w, h = font_to_use.getsize(self.yearbook_page.title)
                             dashed_img_draw.text((int((canvas.size[0] - w) / 2) + 75, 75),
@@ -368,9 +370,6 @@ class RenderingTask(Thread):
 
                             new_background.paste(canvas, offset, mask=canvas)
 
-                            dashed_img_draw.text((int(canvas.size[0]) - 50, int(canvas.size[1]) + 75),
-                                                 str(self.yearbook_page.number),
-                                                 (255, 255, 255), font=TEXT_FONT_SMALL)
                         else:
                             offset = (75, 75)
                             # Left-hand size page, which will have the image starting at 75,75
@@ -380,6 +379,10 @@ class RenderingTask(Thread):
                 else:
                     new_background = canvas
 
+                if self.yearbook_page.number % 2 == 0:
+                    dashed_img_draw.text((int(canvas.size[0]) - 50, int(canvas.size[1]) + 75),
+                                         str(self.yearbook_page.number),
+                                         (255, 255, 255), font=TEXT_FONT_SMALL)
                 new_background.save(self.output_file, quality=85)
 
             if self.on_complete:
