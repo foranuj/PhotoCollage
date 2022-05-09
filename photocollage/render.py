@@ -351,16 +351,18 @@ class RenderingTask(Thread):
 
             if self.output_file:
                 print("Saving image at ...", self.output_file)
+                background = PIL.Image.open(self.yearbook_page.image).convert("RGBA")
+                dashed_img_draw = DashedImageDraw(background)
+
                 offset = (0, 0)
                 if self.full_resolution:
-                    background = PIL.Image.open(self.yearbook_page.image).convert("RGBA")
                     new_background = background.resize(IMAGE_WITH_BLEED_SIZE)
-
+                    dashed_img_draw = DashedImageDraw(new_background)
                     if not self.yearbook_page.page_type.startswith('Static'):
                         if self.yearbook_page.title is not None and len(self.yearbook_page.title) > 2:
                             offset = (75, 180)
                             # Right-hand size page, which will have a title
-                            dashed_img_draw = DashedImageDraw(new_background)
+
                             font_to_use = TITLE_FONT_SELIMA
                             w, h = font_to_use.getsize(self.yearbook_page.title)
                             dashed_img_draw.text((int((canvas.size[0] - w) / 2) + 75, 75),
@@ -373,15 +375,14 @@ class RenderingTask(Thread):
                             # Left-hand size page, which will have the image starting at 75,75
                             new_background.paste(canvas, offset, mask=canvas)
 
-                        if self.yearbook_page.number % 2 != 0:
-                            dashed_img_draw.text((int(canvas.size[0]) - 50, int(canvas.size[1]) + 75),
-                                                 str(self.yearbook_page.number),
-                                                 (255, 255, 255), font=TEXT_FONT_SMALL)
-
                         #self.draw_publishing_borders(new_background, offset)
                 else:
                     new_background = canvas
 
+                if self.yearbook_page.number % 2 == 0:
+                    dashed_img_draw.text((int(canvas.size[0]) - 50, int(canvas.size[1]) + 75),
+                                         str(self.yearbook_page.number),
+                                         (255, 255, 255), font=TEXT_FONT_SMALL)
                 new_background.save(self.output_file, quality=85)
 
             if self.on_complete:
