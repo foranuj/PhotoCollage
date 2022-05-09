@@ -299,11 +299,11 @@ class ImagePreviewArea(Gtk.DrawingArea):
         if widget.name == "LeftPage":
             current_page = self.parent.current_yearbook.pages[self.parent.curr_page_index]
             flow_box = self.parent.images_flow_box_left
-            lbl_ref = self.parent.lbl_left_images_panel
+            lbl_ref = self.parent.lbl_left_image_panel
         else:
             current_page = self.parent.current_yearbook.pages[self.parent.next_page_index]
             flow_box = self.parent.images_flow_box_right
-            lbl_ref = self.parent.lbl_right_images_panel
+            lbl_ref = self.parent.lbl_right_image_panel
 
 
         if current_page.title is not None:
