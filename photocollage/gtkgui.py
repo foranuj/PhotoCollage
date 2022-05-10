@@ -300,11 +300,12 @@ class ImagePreviewArea(Gtk.DrawingArea):
             current_page = self.parent.current_yearbook.pages[self.parent.curr_page_index]
             flow_box = self.parent.images_flow_box_left
             lbl_ref = self.parent.lbl_left_image_panel
+            lbl_text = "Left Images: "
         else:
             current_page = self.parent.current_yearbook.pages[self.parent.next_page_index]
             flow_box = self.parent.images_flow_box_right
             lbl_ref = self.parent.lbl_right_image_panel
-
+            lbl_text = "Right Images: "
 
         if current_page.title is not None:
             options = self.parent.has_title
@@ -335,7 +336,7 @@ class ImagePreviewArea(Gtk.DrawingArea):
 
                 # Let's update the flow images to have this image show up in the bottom
                 img_counter = self.parent.update_flow_box_with_images(flow_box, current_page)
-                lbl_ref.set_label(lbl_ref.get-label() + ": %s" % img_counter)
+                lbl_ref.set_text( lbl_text + " %s" % img_counter)
 
             elif dist_pinned <= 8 * 8:
                 if cell.photo.filename in current_page.pinned_photos:
@@ -1193,10 +1194,13 @@ class MainWindow(Gtk.Window):
             existing_images = yearbook_page.photos_on_page
 
             if self.current_yearbook.parent_yearbook is not None:
-                parent_page: Page = yearbook_page.parent_pages[-1]
-                if set(yearbook_page.photo_list) == set(parent_page.photo_list):
-                    print("photo list is same as parent")
-                    page_collage: UserCollage = parent_page.history[-1].duplicate_with_layout()
+                try:
+                    parent_page: Page = yearbook_page.parent_pages[-1]
+                    if set(yearbook_page.photo_list) == set(parent_page.photo_list):
+                        print("photo list is same as parent")
+                        page_collage: UserCollage = parent_page.history[-1].duplicate_with_layout()
+                except IndexError:
+                    rebuild = True
 
             if yearbook_page.has_parent_pins_changed():
                 new_images = yearbook_page.get_filenames_parent_pins_not_on_page()
