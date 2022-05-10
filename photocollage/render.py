@@ -148,7 +148,7 @@ class RenderingTask(Thread):
 
     def __init__(self, yearbook_page: Page, page, border_width=0.01, border_color=(0, 0, 0),
                  quality=QUALITY_BEST, output_file=None,
-                 on_update=None, on_complete=None, on_fail=None, stitch_background=None):
+                 on_update=None, on_complete=None, on_fail=None, stitch_background=None, page_number_to_print=None):
         super().__init__()
 
         self.yearbook_page = yearbook_page
@@ -165,6 +165,7 @@ class RenderingTask(Thread):
 
         self.canceled = False
         self.full_resolution = stitch_background
+        self.page_number_to_print = page_number_to_print
 
     def abort(self):
         self.canceled = True
@@ -208,7 +209,6 @@ class RenderingTask(Thread):
                 draw.rectangle(xy + XY, color)
 
         return canvas
-
 
     def draw_borders(self, canvas, offset=(0, 0)):
         if self.yearbook_page.is_locked():
@@ -359,30 +359,32 @@ class RenderingTask(Thread):
                     new_background = background.resize(IMAGE_WITH_BLEED_SIZE)
                     dashed_img_draw = DashedImageDraw(new_background)
                     if not self.yearbook_page.page_type.startswith('Static'):
-                        if self.yearbook_page.title is not None and len(self.yearbook_page.title) > 2:
-                            offset = (75, 180)
-                            # Right-hand size page, which will have a title
 
+                        if self.yearbook_page.title is not None and len(self.yearbook_page.title) > 2:
+                            offset = (75, 210)
+                            # Right-hand size page, which will have a title
                             font_to_use = TITLE_FONT_SELIMA
                             w, h = font_to_use.getsize(self.yearbook_page.title)
-                            dashed_img_draw.text((int((canvas.size[0] - w) / 2) + 75, 75),
+                            dashed_img_draw.text((int((canvas.size[0] - w) / 2) + 75, 85),
                                                  self.yearbook_page.title, (255, 255, 255), font=font_to_use)
-
                             new_background.paste(canvas, offset, mask=canvas)
-
                         else:
                             offset = (75, 75)
                             # Left-hand size page, which will have the image starting at 75,75
                             new_background.paste(canvas, offset, mask=canvas)
-
-                        #self.draw_publishing_borders(new_background, offset)
+                        # self.draw_publishing_borders(new_background, offset)
                 else:
                     new_background = canvas
 
-                if self.yearbook_page.number % 2 == 0:
-                    dashed_img_draw.text((int(canvas.size[0]) - 50, int(canvas.size[1]) + 75),
-                                         str(self.yearbook_page.number),
+                if self.page_number_to_print % 2 != 0:
+                    y_offset = 75
+                    if self.yearbook_page.page_type.startswith('Static'):
+                        y_offset = 30
+
+                    dashed_img_draw.text((int(canvas.size[0]) - 50, int(canvas.size[1]) + y_offset),
+                                         str(self.page_number_to_print),
                                          (255, 255, 255), font=TEXT_FONT_SMALL)
+
                 new_background.save(self.output_file, quality=85)
 
             if self.on_complete:

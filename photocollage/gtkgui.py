@@ -36,7 +36,7 @@ from data.rankers import RankerFactory
 from images.ImageWindow import ImageWindow
 from photocollage import APP_NAME, artwork, collage, render
 from photocollage.collage import Photo
-from photocollage.render import PIL_SUPPORTED_EXTS as EXTS, TITLE_FONT_MOHAVE
+from photocollage.render import PIL_SUPPORTED_EXTS as EXTS, TITLE_FONT_MOHAVE, TITLE_FONT_SELIMA
 from photocollage.dialogs.SettingsDialog import SettingsDialog
 
 from data.readers.default import corpus_processor
@@ -439,7 +439,7 @@ class Options:
         if not has_title:
             self.out_h = 3225
         else:
-            _, h = TITLE_FONT_MOHAVE.getsize("A")
+            _, h = TITLE_FONT_SELIMA.getsize("A")
             self.out_h = 3225 - h
         self.out_w = 2475
 
@@ -1080,6 +1080,7 @@ class MainWindow(Gtk.Window):
         output_dir = self.yearbook_parameters['output_dir']
         for page in _yearbook.pages:
             self.render_preview(page, self.img_preview_left)
+
         pickle_yearbook(_yearbook, output_dir)
         print("********Finished rendering pages for the yearbook********")
 
@@ -1111,7 +1112,7 @@ class MainWindow(Gtk.Window):
         self.render_preview(page, self.img_preview_right)
 
     # TODO:: Break into two methods, one that returns the images for the page and another one that does the render
-    def render_preview(self, yearbook_page: Page, img_preview_area: ImagePreviewArea):
+    def render_preview(self, yearbook_page: Page, img_preview_area: ImagePreviewArea, page_number_to_print=None):
         print("---Displaying %s %s" % (yearbook_page.event_name, str(yearbook_page.number)))
 
         rebuild = False
@@ -1264,7 +1265,8 @@ class MainWindow(Gtk.Window):
             border_color=options.border_c,
             on_update=gtk_run_in_main_thread(on_update),
             on_complete=gtk_run_in_main_thread(on_complete),
-            on_fail=gtk_run_in_main_thread(on_fail))
+            on_fail=gtk_run_in_main_thread(on_fail),
+            page_number_to_print=0)
         t.start()
 
         response = comp_dialog.run()
@@ -1310,12 +1312,13 @@ class MainWindow(Gtk.Window):
             page.history[page.history_index] for page in yearbook.pages]
 
         # We need to ignore the first page and the last page as they are the covers
+        page_counter = 0
         for page, page_collage in zip(yearbook.pages, page_collages):
             new_img_path = os.path.join(get_jpg_path(output_dir, yearbook.school,
                                                      yearbook.classroom, yearbook.child),
                                         str(page.number) + "_stitched.png")
 
-            if page.personalized and page.number % 2 != 0:
+            if page.personalized and page_counter % 2 != 0:
                 options = self.without_title
             else:
                 options = self.has_title
@@ -1350,9 +1353,10 @@ class MainWindow(Gtk.Window):
                 on_update=gtk_run_in_main_thread(on_update),
                 on_complete=gtk_run_in_main_thread(on_complete),
                 on_fail=gtk_run_in_main_thread(on_fail),
-                stitch_background=True)
+                stitch_background=True,
+                page_number_to_print=page_counter)
             t.start()
-
+            page_counter = page_counter + 1
             response = compdialog.run()
             if response == Gtk.ResponseType.CANCEL:
                 t.abort()
@@ -1439,7 +1443,10 @@ class MainWindow(Gtk.Window):
                                  _yearbook, cover_settings)
 
         pdf_full_path = pdf_base_path + "HardCover" + extension
-        self.create_pdf_for_printing(_yearbook, pdf_full_path, "HardCover")
+        if not os.path.exists(pdf_full_path):
+            self.create_pdf_for_printing(_yearbook, pdf_full_path, "HardCover")
+        else:
+            print("PDF already exists... delete it if you want to create a new one")
 
     def create_and_upload_pdfs(self, store: Gtk.TreeStore, treepath: Gtk.TreePath, treeiter: Gtk.TreeIter):
         _yearbook: Yearbook = store[treeiter][0]
@@ -1563,6 +1570,7 @@ class MainWindow(Gtk.Window):
         output_dir = self.yearbook_parameters['output_dir']
         for page in self.current_yearbook.pages:
             self.render_preview(page, self.img_preview_left)
+
         pickle_yearbook(self.current_yearbook, output_dir)
         print("********Finished rendering pages for the yearbook********")
 

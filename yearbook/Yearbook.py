@@ -97,6 +97,8 @@ def create_yearbook_from_db(dir_params: {}, school_name: str, classroom: str, ch
                 if os.path.exists(custom_order_dir):
                     if len(os.listdir(custom_order_dir)) < 2:
                         continue
+                    else:
+                        print("We will add this optional page to the yearbook")
                 else:
                     continue
 
@@ -107,8 +109,6 @@ def create_yearbook_from_db(dir_params: {}, school_name: str, classroom: str, ch
         if parent_book is not None:
             current_parent = parent_book
             counter = 0
-            print("looking for parent at page number: %s of %s, with %s optional pages "
-                  % (page.number, len(current_parent.pages), optional_page_offset))
             parent_page_dict = {parent_page.number: parent_page for parent_page in current_parent.pages}
 
             while current_parent is not None and not page.is_optional:
@@ -118,7 +118,6 @@ def create_yearbook_from_db(dir_params: {}, school_name: str, classroom: str, ch
                 print(page_from_parent)
                 current_parent = current_parent.parent_book
                 counter = counter + 1
-            print("Total parent pages added to this book, %s " % len(page.parent_pages))
             page.parent_pages.reverse()
 
         pages.append(page)
@@ -233,6 +232,16 @@ def pickle_yearbook(_yearbook: Yearbook, stub_dir: str):
     path1 = Path(pickle_filename)
     # Create the parent directories if they don't exist
     os.makedirs(path1.parent, exist_ok=True)
+
+    for page in _yearbook.pages:
+        if page.title.startswith("Events"):
+            page.title = "Turkey Trot & Gingerbread Run"
+
+        if page.title.startswith("Grade5 Science"):
+            page.title = "Walden West Science Camp"
+
+        if page.title.startswith("Vargas"):
+            page.title = "Spirit Days"
 
     # Important to open the file in binary mode
     with open(pickle_filename, 'wb') as f:
