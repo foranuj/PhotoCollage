@@ -586,6 +586,7 @@ class MainWindow(Gtk.Window):
         self.page_num_text_entry.set_max_length(2)
         self.lbl_right_page = Gtk.Label(" ")
         self.btn_next_page = Gtk.Button(label=_("Next page..."))
+        self.btn_save_book = Gtk.Button(label=_("Save"))
         self.btn_save_all_books = Gtk.Button(label=_("Save All"))
         self.btn_lock_page_left = Gtk.ToggleButton(label=_("Lock Left"))
         self.btn_lock_page_right = Gtk.ToggleButton(label=_("Lock Right"))
@@ -691,6 +692,8 @@ class MainWindow(Gtk.Window):
         box.pack_start(self.btn_lock_page_right, True, True, 0)
         self.btn_lock_page_right.connect("clicked", self.lock_page_right)
 
+        box.pack_start(self.btn_save_book, True, True, 0)
+        self.btn_save_book.connect("clicked", self.save_book)
         box.pack_start(self.btn_save_all_books, True, True, 0)
         self.btn_save_all_books.connect("clicked", self.pickle_all_books)
 
@@ -1553,6 +1556,15 @@ class MainWindow(Gtk.Window):
     def pickle_book(self, store: Gtk.TreeStore, treepath: Gtk.TreePath, treeiter: Gtk.TreeIter):
         _yearbook = store[treeiter][0]
         pickle_yearbook(_yearbook, self.yearbook_parameters['output_dir'])
+
+    def save_book(self, button):
+        print("Saving yearbook")
+        self.current_yearbook.print_yearbook_info()
+        output_dir = self.yearbook_parameters['output_dir']
+        for page in self.current_yearbook.pages:
+            self.render_preview(page, self.img_preview_left)
+        pickle_yearbook(self.current_yearbook, output_dir)
+        print("********Finished rendering pages for the yearbook********")
 
     def pickle_all_books(self, button):
         print("Will be pickling all books")
