@@ -202,7 +202,7 @@ class Yearbook(GObject.GObject):
     def is_edited(self):
         from functools import reduce
 
-        is_edited = [page.is_edited() for page in self.pages]
+        is_edited = [page.is_edited() or page.is_optional for page in self.pages]
         return reduce(lambda x, y: x or y, is_edited)
 
 

@@ -1318,6 +1318,12 @@ class MainWindow(Gtk.Window):
         # We need to ignore the first page and the last page as they are the covers
         page_counter = 0
         for page, page_collage in zip(yearbook.pages, page_collages):
+
+            # check for empty photo list
+            if len(page_collage.photolist) == 0:
+                print("Skipping a page while printing")
+                continue
+
             new_img_path = os.path.join(get_jpg_path(output_dir, yearbook.school,
                                                      yearbook.classroom, yearbook.child),
                                         str(page.number) + "_stitched.png")
