@@ -336,7 +336,7 @@ class ImagePreviewArea(Gtk.DrawingArea):
 
                 # Let's update the flow images to have this image show up in the bottom
                 img_counter = self.parent.update_flow_box_with_images(flow_box, current_page)
-                lbl_ref.set_text( lbl_text + " %s" % img_counter)
+                lbl_ref.set_text(lbl_text + " %s" % img_counter)
 
             elif dist_pinned <= 8 * 8:
                 if cell.photo.filename in current_page.pinned_photos:
@@ -477,6 +477,8 @@ def stitch_print_ready_cover(pdf_path: str, yearbook: Yearbook, cover_settings: 
     dirname = os.path.dirname(pdf_path)
     base_name = os.path.basename(pdf_path)
     cover_path_pdf = os.path.join(dirname, base_name + "_cover.pdf")
+    front_cover_path = os.path.join(dirname, base_name + "_front_cover.pdf")
+    back_cover_path = os.path.join(dirname, base_name + "_back_cover.pdf")
 
     canvas_cover = Canvas(cover_path_pdf, pagesize=cover_settings.get_page_size())
 
@@ -495,6 +497,12 @@ def stitch_print_ready_cover(pdf_path: str, yearbook: Yearbook, cover_settings: 
                            width=cover_img_dims[0],
                            height=cover_img_dims[1])
 
+    front_cover_canvas = Canvas(front_cover_path, pagesize=cover_settings.get_cover_img_dims())
+    back_cover_canvas = Canvas(back_cover_path, pagesize=cover_settings.get_cover_img_dims())
+
+    front_cover_canvas.drawImage(yearbook.pages[0].image, 0, 0, width=cover_img_dims[0], height=cover_img_dims[1])
+    back_cover_canvas.drawImage(yearbook.pages[-1].image, 0, 0, width=cover_img_dims[0], height=cover_img_dims[1])
+
     if yearbook.child is not None:
         from reportlab.lib import colors
         from reportlab.lib.enums import TA_CENTER
@@ -504,7 +512,6 @@ def stitch_print_ready_cover(pdf_path: str, yearbook: Yearbook, cover_settings: 
         # TODO:: Have to do the math to figure out the name
         (title_x, title_y) = cover_settings.get_title_corner()
 
-        #  canvas_cover.drawString(title_x, title_y, yearbook.child)
         frame1 = Frame(title_x, title_y, 3.5 * inch, 1.5 * inch, showBoundary=0)
         styles = getSampleStyleSheet()
         styles.add(
@@ -515,12 +522,28 @@ def stitch_print_ready_cover(pdf_path: str, yearbook: Yearbook, cover_settings: 
         story = [Paragraph(name, styles['TitleStyle'])]
         story_inframe = KeepInFrame(3.5 * inch, 1.5 * inch, story)
         frame1.addFromList([story_inframe], canvas_cover)
+        frame1.addFromList([story_inframe], front_cover_canvas)
 
     canvas_cover.save()
+    front_cover_canvas.save()
+    back_cover_canvas.save()
 
     print("Finished writing pdf here %s " % cover_path_pdf)
     return cover_path_pdf
 
+
+def create_pdf_with_cover_pages(merged_pdf_path: str, front_cover_path:str, interior_pdf_path: str, back_cover_path: str):
+
+    from PyPDF2 import PdfFileMerger
+    merger = PdfFileMerger()
+    merger.append(open(front_cover_path, 'rb'))
+    merger.append(open(interior_pdf_path, 'rb'))
+    merger.append(open(back_cover_path, 'rb'))
+
+    with open(merged_pdf_path, "wb") as fout:
+        merger.write(fout)
+
+    print("Finished creating merged PDF, here %s " % merged_pdf_path)
 
 class MainWindow(Gtk.Window):
     treeModel: TreeStore
@@ -543,7 +566,7 @@ class MainWindow(Gtk.Window):
         self.output_base_dir = os.path.join('/Users', getpass.getuser(), 'YearbookCreatorOut')
         self.input_base_dir = os.path.join(self.corpus_base_dir, 'YearbookCreatorInput')
         self.yearbook_parameters = {'max_count': 12,
-                                    'db_file_path': os.path.join(self.input_base_dir, 'RY_small.db'),
+                                    'db_file_path': os.path.join(self.input_base_dir, 'RY_Small_New.db'),
                                     'output_dir': os.path.join(self.output_base_dir, getpass.getuser()),
                                     'corpus_base_dir': self.corpus_base_dir}
 
@@ -593,8 +616,8 @@ class MainWindow(Gtk.Window):
         self.btn_lock_page_right = Gtk.ToggleButton(label=_("Lock Right"))
         self.btn_pin_page_left = Gtk.ToggleButton(label="Pin Page Left")
         self.btn_pin_page_right = Gtk.ToggleButton(label="Pin Page Right")
-        self.lbl_left_image_panel =  Gtk.Label(label="Left Images")
-        self.lbl_right_image_panel =  Gtk.Label(label="Right Images")
+        self.lbl_left_image_panel = Gtk.Label(label="Left Images")
+        self.lbl_right_image_panel = Gtk.Label(label="Right Images")
 
         self.btn_print_all_books = Gtk.Button(label=_("Print All@Lulu"))
         self.btn_submit_order = Gtk.Button(label=_("ORDER"))
@@ -1003,7 +1026,8 @@ class MainWindow(Gtk.Window):
         print("Updating left page, page index %s " % str(self.curr_page_index))
         print(self.current_yearbook.pages[self.curr_page_index])
         self.update_photolist(self.current_yearbook.pages[self.curr_page_index], [img_name], self.has_title)
-        img_counter = self.update_flow_box_with_images(self.images_flow_box_left, self.current_yearbook.pages[self.curr_page_index])
+        img_counter = self.update_flow_box_with_images(self.images_flow_box_left,
+                                                       self.current_yearbook.pages[self.curr_page_index])
         self.lbl_left_image_panel.set_text("Left Images : %s " % img_counter)
         self.update_favorites_images()
 
@@ -1011,7 +1035,8 @@ class MainWindow(Gtk.Window):
         print("Updating right page, page index %s " % str(self.next_page_index))
         print(self.current_yearbook.pages[self.next_page_index])
         self.update_photolist(self.current_yearbook.pages[self.next_page_index], [img_name], self.without_title)
-        img_counter = self.update_flow_box_with_images(self.images_flow_box_right, self.current_yearbook.pages[self.next_page_index])
+        img_counter = self.update_flow_box_with_images(self.images_flow_box_right,
+                                                       self.current_yearbook.pages[self.next_page_index])
         self.lbl_right_image_panel.set_text("Right Images : %s " % img_counter)
         self.update_favorites_images()
 
@@ -1150,7 +1175,8 @@ class MainWindow(Gtk.Window):
 
             if self.current_yearbook.parent_yearbook is not None:
                 try:
-                    print("******We have a parent, let's retrieve from there, %s *****" % len(yearbook_page.parent_pages))
+                    print(
+                        "******We have a parent, let's retrieve from there, %s *****" % len(yearbook_page.parent_pages))
                     for parent_pg in reversed(yearbook_page.parent_pages):
                         print(parent_pg)
                         print("The parent page was edited:%s?" % parent_pg.is_edited())
@@ -1395,7 +1421,6 @@ class MainWindow(Gtk.Window):
         self.btn_submit_order.set_sensitive(True)
 
     def create_pdf_for_printing(self, yearbook: Yearbook, pdf_full_path: str, cover_format: str):
-
         if yearbook.parent_yearbook is None or yearbook.is_edited():
             self.stitch_print_images(yearbook)
             images = []
@@ -1405,6 +1430,11 @@ class MainWindow(Gtk.Window):
                 pages = yearbook.pages[1:-1]
 
             for page in pages:
+                # check for empty photo list
+                if len(page.photolist) == 0:
+                    print("Skipping a page while printing")
+                    continue
+
                 images.append(os.path.join(get_jpg_path(self.yearbook_parameters['output_dir'],
                                                         yearbook.school,
                                                         yearbook.classroom,
@@ -1445,6 +1475,10 @@ class MainWindow(Gtk.Window):
         pdf_base_path = self.get_pdf_base_path(_yearbook)
 
         cover_settings: CoverSettings = get_cover_settings("HardCover")
+
+        dirname = os.path.dirname(pdf_base_path)
+        base_name = os.path.basename(pdf_base_path)
+
         stitch_print_ready_cover(pdf_base_path + "HardCover" + extension,
                                  _yearbook, cover_settings)
 
@@ -1457,6 +1491,12 @@ class MainWindow(Gtk.Window):
             self.create_pdf_for_printing(_yearbook, pdf_full_path, "HardCover")
         else:
             print("PDF already exists... delete it if you want to create a new one")
+
+        merged_pdf_path = pdf_base_path + "_merged" + extension
+        front_cover_path = os.path.join(dirname, base_name + "SoftCover.pdf_front_cover.pdf")
+        back_cover_path = os.path.join(dirname, base_name + "SoftCover.pdf_back_cover.pdf")
+
+        create_pdf_with_cover_pages(merged_pdf_path, front_cover_path, pdf_full_path, back_cover_path)
 
     def create_and_upload_pdfs(self, store: Gtk.TreeStore, treepath: Gtk.TreePath, treeiter: Gtk.TreeIter):
         _yearbook: Yearbook = store[treeiter][0]
