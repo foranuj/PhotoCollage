@@ -521,6 +521,7 @@ def stitch_print_ready_cover(pdf_path: str, yearbook: Yearbook, cover_settings: 
         name = "\n".join(yearbook.child.split(" "))
         story = [Paragraph(name, styles['TitleStyle'])]
         story_inframe = KeepInFrame(3.5 * inch, 1.5 * inch, story)
+
         frame1.addFromList([story_inframe], canvas_cover)
         frame1.addFromList([story_inframe], front_cover_canvas)
 
@@ -1431,7 +1432,7 @@ class MainWindow(Gtk.Window):
 
             for page in pages:
                 # check for empty photo list
-                if len(page.photolist) == 0:
+                if len(page.photo_list) == 0:
                     print("Skipping a page while printing")
                     continue
 
