@@ -105,7 +105,6 @@ def gtk_run_in_main_thread(fn):
 
     return my_fn
 
-
 def load_favorites_pickle(favorite_pickle_path: str) -> set():
     pick_file = os.path.join(favorite_pickle_path, "favorite.pickle")
     if not os.path.exists(pick_file):
@@ -115,6 +114,11 @@ def load_favorites_pickle(favorite_pickle_path: str) -> set():
     favorites_pickle = open(pick_file, "rb")
     return pickle.load(favorites_pickle)
 
+def save_orders_pickle(orders, orders_pickle_path=None):
+    os.makedirs(orders_pickle_path, exist_ok=True)
+
+    with open(os.path.join(favorite_pickle_path, "orders.pickle"), "wb") as f:
+        pickle.dump(orders, f)
 
 def save_favorites_pickle(favorites, favorite_pickle_path=None):
     os.makedirs(favorite_pickle_path, exist_ok=True)
@@ -648,8 +652,9 @@ class MainWindow(Gtk.Window):
         self.connect('delete-event', self.save_favorites)
 
     def save_favorites(self, widget, event):
-        print("Saving pickle file for favorites")
+        print("Saving pickle file for favorites and orders")
         save_favorites_pickle(self.favorite_images, os.path.join(self.get_folder("Favorites")))
+        save_orders_pickle(self.order_items, os.path.join(self.get_folder("Orders")))
         return False
 
     def make_window(self):
