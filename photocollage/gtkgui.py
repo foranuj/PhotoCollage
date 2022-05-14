@@ -105,6 +105,7 @@ def gtk_run_in_main_thread(fn):
 
     return my_fn
 
+
 def load_favorites_pickle(favorite_pickle_path: str) -> set():
     pick_file = os.path.join(favorite_pickle_path, "favorite.pickle")
     if not os.path.exists(pick_file):
@@ -114,11 +115,13 @@ def load_favorites_pickle(favorite_pickle_path: str) -> set():
     favorites_pickle = open(pick_file, "rb")
     return pickle.load(favorites_pickle)
 
+
 def save_orders_pickle(orders, orders_pickle_path=None):
     os.makedirs(orders_pickle_path, exist_ok=True)
 
-    with open(os.path.join(favorite_pickle_path, "orders.pickle"), "wb") as f:
+    with open(os.path.join(orders_pickle_path, "orders.pickle"), "wb") as f:
         pickle.dump(orders, f)
+
 
 def save_favorites_pickle(favorites, favorite_pickle_path=None):
     os.makedirs(favorite_pickle_path, exist_ok=True)
@@ -580,7 +583,7 @@ class MainWindow(Gtk.Window):
         self.output_base_dir = os.path.join('/Users', getpass.getuser(), 'YearbookCreatorOut')
         self.input_base_dir = os.path.join(self.corpus_base_dir, 'YearbookCreatorInput')
         self.yearbook_parameters = {'max_count': 12,
-                                    'db_file_path': os.path.join(self.input_base_dir, 'RY_Small_New.db'),
+                                    'db_file_path': os.path.join(self.input_base_dir, 'RY_Small.db'),
                                     'output_dir': os.path.join(self.output_base_dir, getpass.getuser()),
                                     'corpus_base_dir': self.corpus_base_dir}
 
@@ -1494,11 +1497,11 @@ class MainWindow(Gtk.Window):
         dirname = os.path.dirname(pdf_base_path)
         base_name = os.path.basename(pdf_base_path)
 
-        stitch_print_ready_cover(pdf_base_path + "HardCover" + extension,
+        stitch_print_ready_cover(pdf_base_path + "_HardCover",
                                  _yearbook, cover_settings)
 
         cover_settings: CoverSettings = get_cover_settings("SoftCover")
-        stitch_print_ready_cover(pdf_base_path + "SoftCover" + extension,
+        stitch_print_ready_cover(pdf_base_path + "_SoftCover",
                                  _yearbook, cover_settings)
 
         pdf_full_path = pdf_base_path + "HardCover" + extension
@@ -1508,8 +1511,8 @@ class MainWindow(Gtk.Window):
             print("PDF already exists... delete it if you want to create a new one")
 
         merged_pdf_path = pdf_base_path + "_merged" + extension
-        front_cover_path = os.path.join(dirname, base_name + "SoftCover.pdf_front_cover.pdf")
-        back_cover_path = os.path.join(dirname, base_name + "SoftCover.pdf_back_cover.pdf")
+        front_cover_path = os.path.join(dirname, base_name + "_SoftCover_front_cover.pdf")
+        back_cover_path = os.path.join(dirname, base_name + "_SoftCover_back_cover.pdf")
         blank_pdf_path = os.path.join(self.yearbook_parameters['corpus_base_dir'], self.current_yearbook.school,
                                       'Theme', 'blank.pdf')
         create_pdf_with_cover_pages(merged_pdf_path, front_cover_path, pdf_full_path, back_cover_path, blank_pdf_path)
