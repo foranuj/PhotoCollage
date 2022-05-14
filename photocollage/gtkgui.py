@@ -470,6 +470,26 @@ def pin_all_photos_on_page(page: Page, img_preview: ImagePreviewArea):
         pass
 
 
+def draw_title_on_canvas(canvas_cover, title: str, title_corner):
+    from reportlab.lib import colors
+    from reportlab.lib.enums import TA_CENTER
+
+    # On the front cover we draw the text
+    canvas_cover.setFont("Signika", 34)
+    # TODO:: Have to do the math to figure out the name
+
+    frame1 = Frame(title_corner[0], title_corner[1], 3.5 * inch, 1.5 * inch, showBoundary=0)
+    styles = getSampleStyleSheet()
+    styles.add(
+        ParagraphStyle(name='TitleStyle', fontName='Signika', fontSize=34, leading=36,
+                       textColor=colors.black, alignment=TA_CENTER))
+
+    # name = "\n".join(yearbook.child.split(" "))
+    story = [Paragraph(title, styles['TitleStyle'])]
+    story_inframe = KeepInFrame(3.5 * inch, 1.5 * inch, story)
+    frame1.addFromList([story_inframe], canvas_cover)
+
+
 def stitch_print_ready_cover(pdf_path: str, yearbook: Yearbook, cover_settings: CoverSettings):
     if cover_settings is None:
         return None
@@ -504,26 +524,11 @@ def stitch_print_ready_cover(pdf_path: str, yearbook: Yearbook, cover_settings: 
     back_cover_canvas.drawImage(yearbook.pages[-1].image, 0, 0, width=cover_img_dims[0], height=cover_img_dims[1])
 
     if yearbook.child is not None:
-        from reportlab.lib import colors
-        from reportlab.lib.enums import TA_CENTER
+        title_str = "\n".join(yearbook.child.split(" "))
 
-        # On the front cover we draw the text
-        canvas_cover.setFont("Signika", 34)
-        # TODO:: Have to do the math to figure out the name
-        (title_x, title_y) = cover_settings.get_title_corner()
-
-        frame1 = Frame(title_x, title_y, 3.5 * inch, 1.5 * inch, showBoundary=0)
-        styles = getSampleStyleSheet()
-        styles.add(
-            ParagraphStyle(name='TitleStyle', fontName='Signika', fontSize=34, leading=36,
-                           textColor=colors.black, alignment=TA_CENTER))
-
-        name = "\n".join(yearbook.child.split(" "))
-        story = [Paragraph(name, styles['TitleStyle'])]
-        story_inframe = KeepInFrame(3.5 * inch, 1.5 * inch, story)
-
-        frame1.addFromList([story_inframe], canvas_cover)
-        frame1.addFromList([story_inframe], front_cover_canvas)
+        draw_title_on_canvas(canvas_cover, title_str, cover_settings.get_title_corner())
+        draw_title_on_canvas(front_cover_canvas, title_str, (4.5 * inch, 9.25 * inch))
+        print("Finished drawing title")
 
     canvas_cover.save()
     front_cover_canvas.save()
@@ -533,18 +538,22 @@ def stitch_print_ready_cover(pdf_path: str, yearbook: Yearbook, cover_settings: 
     return cover_path_pdf
 
 
-def create_pdf_with_cover_pages(merged_pdf_path: str, front_cover_path:str, interior_pdf_path: str, back_cover_path: str):
-
+def create_pdf_with_cover_pages(merged_pdf_path: str, front_cover_path: str, interior_pdf_path: str,
+                                back_cover_path: str, blank_pdf_path: str):
     from PyPDF2 import PdfFileMerger
+    blank_pdf = open(blank_pdf_path, 'rb')
     merger = PdfFileMerger()
     merger.append(open(front_cover_path, 'rb'))
+    merger.append(blank_pdf)
     merger.append(open(interior_pdf_path, 'rb'))
+    merger.append(blank_pdf)
     merger.append(open(back_cover_path, 'rb'))
 
     with open(merged_pdf_path, "wb") as fout:
         merger.write(fout)
 
     print("Finished creating merged PDF, here %s " % merged_pdf_path)
+
 
 class MainWindow(Gtk.Window):
     treeModel: TreeStore
@@ -1496,8 +1505,9 @@ class MainWindow(Gtk.Window):
         merged_pdf_path = pdf_base_path + "_merged" + extension
         front_cover_path = os.path.join(dirname, base_name + "SoftCover.pdf_front_cover.pdf")
         back_cover_path = os.path.join(dirname, base_name + "SoftCover.pdf_back_cover.pdf")
-
-        create_pdf_with_cover_pages(merged_pdf_path, front_cover_path, pdf_full_path, back_cover_path)
+        blank_pdf_path = os.path.join(self.yearbook_parameters['corpus_base_dir'], self.current_yearbook.school,
+                                      'Theme', 'blank.pdf')
+        create_pdf_with_cover_pages(merged_pdf_path, front_cover_path, pdf_full_path, back_cover_path, blank_pdf_path)
 
     def create_and_upload_pdfs(self, store: Gtk.TreeStore, treepath: Gtk.TreePath, treeiter: Gtk.TreeIter):
         _yearbook: Yearbook = store[treeiter][0]
