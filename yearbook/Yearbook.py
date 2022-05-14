@@ -115,7 +115,6 @@ def create_yearbook_from_db(dir_params: {}, school_name: str, classroom: str, ch
                 # Add the same index page from the parent
                 page_from_parent = parent_page_dict[page.number]
                 page.add_parent_page(page_from_parent)
-                print(page_from_parent)
                 current_parent = current_parent.parent_book
                 counter = counter + 1
             page.parent_pages.reverse()

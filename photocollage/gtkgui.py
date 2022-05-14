@@ -1512,16 +1512,18 @@ class MainWindow(Gtk.Window):
         else:
             print("PDF already exists... delete it if you want to create a new one")
             print("Compressing PDF")
-            compressed_out_path = self.get_pdf_base_path(_yearbook) + "_compressed.pdf"
-            if not os.path.exists(compressed_out_path):
-                compress(pdf_full_path, compressed_out_path, power=1)
+
+        compressed_out_path = self.get_pdf_base_path(_yearbook) + "_compressed.pdf"
+        if not os.path.exists(compressed_out_path):
+            compress(pdf_full_path, compressed_out_path, power=1)
 
         merged_pdf_path = pdf_base_path + "_merged" + extension
         front_cover_path = os.path.join(dirname, base_name + "_SoftCover_front_cover.pdf")
         back_cover_path = os.path.join(dirname, base_name + "_SoftCover_back_cover.pdf")
         blank_pdf_path = os.path.join(self.yearbook_parameters['corpus_base_dir'], self.current_yearbook.school,
                                       'Theme', 'blank.pdf')
-        create_pdf_with_cover_pages(merged_pdf_path, front_cover_path, compressed_out_path, back_cover_path, blank_pdf_path)
+        create_pdf_with_cover_pages(merged_pdf_path, front_cover_path, compressed_out_path,
+                                    back_cover_path, blank_pdf_path)
 
     def create_and_upload_pdfs(self, store: Gtk.TreeStore, treepath: Gtk.TreePath, treeiter: Gtk.TreeIter):
         _yearbook: Yearbook = store[treeiter][0]
