@@ -59,7 +59,6 @@ class SoftCoverSettings(CoverSettings):
 
 
 def get_cover_settings(cover_format: str) -> CoverSettings:
-    print("Returning cover setting for %s " % cover_format)
     if cover_format == "HardCover" or cover_format == "Hardcover" or cover_format == "hardcover":
         return HardCoverSettings()
     elif cover_format == "SoftCover" or cover_format == "Softcover" or cover_format == "softcover":
