@@ -67,9 +67,6 @@ def get_tree_model(dir_params: {}, school_selection: str) -> Gtk.TreeStore:
                 treestore.append(class_parent, [child_yearbook])
                 added_schools[school_name][current_class][current_child] = {}
 
-                if count_children % 10 == 0:
-                    print("Added %s children" % count_children)
-
     print("Total number of children added %s" % count_children)
     conn.close()
     return treestore
