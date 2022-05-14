@@ -46,16 +46,12 @@ def create_yearbook_from_pickle(pickle_file_path, parent_book):
             current_parent = parent_book
             counter = 0
             parent_page_dict = {parent_page.number: parent_page for parent_page in current_parent.pages}
-            print("looking for parent at page number: %s of %s "
-                  % (page.number, len(current_parent.pages)))
             while current_parent is not None and not page.is_optional:
                 # Add the same index page from the parent
                 page_from_parent = parent_page_dict[page.number]
                 page.add_parent_page(page_from_parent)
-                print(page_from_parent)
                 current_parent = current_parent.parent_book
                 counter = counter + 1
-            print("Total parent pages added to this book, %s " % len(page.parent_pages))
             page.parent_pages.reverse()
 
     return Yearbook(pickle_yearbook=yearbook)
@@ -160,6 +156,9 @@ class PickleYearbook:
             if order.cover_format == cover_format:
                 return order.interior_pdf_url
         return None
+
+    def get_id(self):
+        return "%s :-> %s :-> %s" % (self.school, self.classroom, self.child)
 
 
 class Yearbook(GObject.GObject):
