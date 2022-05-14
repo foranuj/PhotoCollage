@@ -595,6 +595,7 @@ class MainWindow(Gtk.Window):
         self.current_yearbook: Yearbook = None
         self.order_items: [OrderDetails] = []
         self.corpus = None
+        self.yearbook_to_file_map = {}
 
         from data.sqllite.reader import get_school_list
         self.school_combo = Gtk.ComboBoxText.new()
@@ -1364,8 +1365,9 @@ class MainWindow(Gtk.Window):
         page_counter = 0
         for page, page_collage in zip(yearbook.pages, page_collages):
 
+            print("Photos on page %s " % len(page_collage.photolist))
             # check for empty photo list
-            if len(page_collage.photolist) == 0:
+            if len(page.photo_list) == 1 and page.personalized and "blank" in page.photo_list[0].filename:
                 print("Skipping a page while printing")
                 continue
 
@@ -1373,7 +1375,7 @@ class MainWindow(Gtk.Window):
                                                      yearbook.classroom, yearbook.child),
                                         str(page.number) + "_stitched.png")
 
-            if page.personalized and page_counter % 2 != 0:
+            if page.personalized and (page.title is None or len(page.title) < 3):
                 options = self.without_title
             else:
                 options = self.has_title
@@ -1449,9 +1451,10 @@ class MainWindow(Gtk.Window):
                 pages = yearbook.pages[1:-1]
 
             for page in pages:
+                print("Page has %s pictures " % len(page.photo_list))
                 # check for empty photo list
-                if len(page.photo_list) == 0:
-                    print("Skipping a page while printing")
+                if len(page.photo_list) == 1 and page.personalized and "blank" in page.photo_list[0].filename:
+                    print("Skipping a personalized page that has only 1 image")
                     continue
 
                 images.append(os.path.join(get_jpg_path(self.yearbook_parameters['output_dir'],
@@ -1462,15 +1465,26 @@ class MainWindow(Gtk.Window):
 
             print("Creating PDF from images")
             create_pdf_from_images(pdf_full_path, images)
-
+            dirname = os.path.dirname(pdf_full_path)
+            base_name = os.path.basename(pdf_full_path)
+            compressed_output_path = os.path.join(dirname, base_name + "_compressed.pdf")
+            compress(pdf_full_path, compressed_output_path, power=1)
+            self.yearbook_to_file_map[yearbook.get_id()] = compressed_output_path
             return False
         else:
             print("Will copy the parent PDF here")
+            yearbook.parent_yearbook.print_yearbook_info()
             # You should copy the parent file at the new PDF location
-            parent_pdf_path = self.get_pdf_base_path(yearbook.parent_yearbook) + cover_format + ".pdf"
+            parent_pdf_path = self.yearbook_to_file_map[yearbook.parent_yearbook.get_id()]
+            if os.path.exists(parent_pdf_path):
+                print("Got the correct parent %s " % parent_pdf_path)
+            else:
+                print("parent path is not correct %s " % parent_pdf_path)
 
-            if not os.path.exists(pdf_full_path):
-                shutil.copyfile(parent_pdf_path, pdf_full_path)
+            self.yearbook_to_file_map[yearbook.get_id()] = parent_pdf_path
+
+            # if not os.path.exists(pdf_full_path):
+            #    shutil.copyfile(parent_pdf_path, pdf_full_path)
 
             return True
 
@@ -1507,33 +1521,37 @@ class MainWindow(Gtk.Window):
                                  _yearbook, cover_settings)
 
         pdf_full_path = pdf_base_path + "HardCover" + extension
-        if not os.path.exists(pdf_full_path):
-            self.create_pdf_for_printing(_yearbook, pdf_full_path, "HardCover")
-        else:
-            print("PDF already exists... delete it if you want to create a new one")
-            print("Compressing PDF")
-
         compressed_out_path = self.get_pdf_base_path(_yearbook) + "_compressed.pdf"
+
         if not os.path.exists(compressed_out_path):
-            compress(pdf_full_path, compressed_out_path, power=1)
+            reused = self.create_pdf_for_printing(_yearbook, pdf_full_path, "HardCover")
+            if not reused:
+                compress(pdf_full_path, compressed_out_path, power=1)
+        else:
+            print("Compressed PDF already exists... delete it if you want to create a new one")
+            self.yearbook_to_file_map[_yearbook.get_id()] = compressed_out_path
 
         merged_pdf_path = pdf_base_path + "_merged" + extension
         front_cover_path = os.path.join(dirname, base_name + "_SoftCover_front_cover.pdf")
         back_cover_path = os.path.join(dirname, base_name + "_SoftCover_back_cover.pdf")
         blank_pdf_path = os.path.join(self.yearbook_parameters['corpus_base_dir'], self.current_yearbook.school,
                                       'Theme', 'blank.pdf')
-        create_pdf_with_cover_pages(merged_pdf_path, front_cover_path, compressed_out_path,
-                                    back_cover_path, blank_pdf_path)
+        # create_pdf_with_cover_pages(merged_pdf_path, front_cover_path, compressed_out_path,
+        #                            back_cover_path, blank_pdf_path)
 
     def create_and_upload_pdfs(self, store: Gtk.TreeStore, treepath: Gtk.TreePath, treeiter: Gtk.TreeIter):
         _yearbook: Yearbook = store[treeiter][0]
         print("****************************************************************")
         print("UPLOADING FOR YEARBOOK %s " % _yearbook.print_yearbook_info())
         print("STEP 1: Create_print_pdf %s " % str(treepath.get_depth()))
+
         extension = ".pdf"
         pdf_base_path = self.get_pdf_base_path(_yearbook)
 
         if _yearbook.child is None:
+            print("""RETURNING FROM ORDERS SINCE THERE'S NO CHILD""")
+            return
+
             # Let's create three dummy orders
             # Hardcover, softcover and digital.
             order_hard_cover = OrderDetails("root", "HardCover")
@@ -1582,10 +1600,10 @@ class MainWindow(Gtk.Window):
                     order.interior_pdf_url = _yearbook.parent_yearbook.get_interior_url(order.cover_format)
                     print("Reusing URL %s " % order.interior_pdf_url)
                 else:
-                    print("Uploading %s" % self.get_pdf_base_path(_yearbook) + "_compressed.pdf")
+                    print("Uploading %s" % self.yearbook_to_file_map[_yearbook.get_id()])
                     order.interior_pdf_url = get_url_from_file_id(
                         upload_with_item_check('1UWyYpHCUJ2lIUP0wOrTwtFeXYOXTd5x9',
-                                               self.get_pdf_base_path(_yearbook) + "_compressed.pdf",
+                                               self.yearbook_to_file_map[_yearbook.get_id()],
                                                get_file_id_from_url(
                                                    order.interior_pdf_url)))
 
