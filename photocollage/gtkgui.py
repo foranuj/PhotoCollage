@@ -745,7 +745,7 @@ class MainWindow(Gtk.Window):
         self.btn_print_all_books.connect("clicked", self.print_all_pdfs)
         box.pack_start(Gtk.SeparatorToolItem(), True, True, 0)
 
-        self.btn_submit_order.set_sensitive(False)
+        self.btn_submit_order.set_sensitive(True)
         box.pack_start(self.btn_submit_order, True, True, 0)
         self.btn_submit_order.connect("clicked", self.submit_full_order)
         box.pack_start(Gtk.SeparatorToolItem(), True, True, 0)
