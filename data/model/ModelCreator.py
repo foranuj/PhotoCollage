@@ -1,3 +1,5 @@
+from functools import reduce
+
 import gi
 
 import gi
@@ -63,9 +65,12 @@ def get_tree_model(dir_params: {}, school_selection: str) -> Gtk.TreeStore:
             child_yearbook = create_yearbook(dir_params, school_name, classroom=current_class,
                                              child=current_child,
                                              parent_book=class_yearbook.pickle_yearbook)
+
             if child_yearbook is not None:
-                treestore.append(class_parent, [child_yearbook])
-                added_schools[school_name][current_class][current_child] = {}
+                has_optional_pages = reduce(lambda x, y: x or y, [page.is_optional for page in child_yearbook.pages])
+                if has_optional_pages:
+                    treestore.append(class_parent, [child_yearbook])
+                    added_schools[school_name][current_class][current_child] = {}
 
     print("Total number of children added %s" % count_children)
     conn.close()
