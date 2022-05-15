@@ -43,7 +43,7 @@ class SoftCoverSettings(CoverSettings):
 
     def get_cover_img_dims(self):
         width = 8.5 * inch
-        height = 11 * inch
+        height = 11.125 * inch
         return width, height
 
     def get_top_left_front_cover(self):
