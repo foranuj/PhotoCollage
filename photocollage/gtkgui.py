@@ -951,7 +951,7 @@ class MainWindow(Gtk.Window):
             child_portraits = self.get_child_portrait_images(yearbook)
 
             for img in child_portraits:
-                if img.endswith("jpg") or img.endswith("png"):
+                if img.endswith("jpg") or img.endswith("png") or img.endswith("PNG") or img.endswith("jpeg") or img.endswith("JPG"):
                     try:
                         pixbuf = get_orientation_fixed_pixbuf(img)
                         image = Gtk.Image.new_from_pixbuf(pixbuf)
