@@ -1227,9 +1227,12 @@ class MainWindow(Gtk.Window):
                         page_images = [os.path.join(self.corpus_base_dir, self.current_yearbook.school, "blank.png")]
 
                     print(len(page_images))
-                    first_photo_list: [Photo] = render.build_photolist(page_images)
-                    page_collage = UserCollage(first_photo_list)
-                    page_collage.make_page(options)
+                    try:
+                        page_collage: UserCollage = yearbook_page.history[-1]
+                    except IndexError:
+                        first_photo_list: [Photo] = render.build_photolist(page_images)
+                        page_collage = UserCollage(first_photo_list)
+                        page_collage.make_page(options)
 
             elif yearbook_page.history_index < 0:
                 print("No parent exists, so we create from scratch")
@@ -1240,6 +1243,8 @@ class MainWindow(Gtk.Window):
             else:
                 page_collage: UserCollage = yearbook_page.history[-1]
         else:
+            print("YEARBOOK PAGE IS EDITED")
+
             # Render last collage, unless something changes
             page_collage = yearbook_page.history[-1]
             existing_images = yearbook_page.photos_on_page
@@ -1251,7 +1256,8 @@ class MainWindow(Gtk.Window):
                         print("photo list is same as parent")
                         page_collage: UserCollage = parent_page.history[-1].duplicate_with_layout()
                 except IndexError:
-                    rebuild = True
+                    if not yearbook_page.is_optional:
+                        rebuild = True
 
             if yearbook_page.has_parent_pins_changed():
                 new_images = yearbook_page.get_filenames_parent_pins_not_on_page()
