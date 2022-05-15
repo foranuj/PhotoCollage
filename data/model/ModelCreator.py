@@ -67,8 +67,10 @@ def get_tree_model(dir_params: {}, school_selection: str) -> Gtk.TreeStore:
                                              parent_book=class_yearbook.pickle_yearbook)
 
             if child_yearbook is not None:
-                has_optional_pages = reduce(lambda x, y: x or y, [page.is_optional for page in child_yearbook.pages])
-                if has_optional_pages:
+                # has_optional_pages = reduce(lambda x, y: x or y, [page.is_optional for page in child_yearbook.pages])
+                # if has_optional_pages:
+                if len(child_yearbook.orders) > 0:
+                    print("CHILD HAS AN ORDER PLACED, SO ADDING TO TREE")
                     treestore.append(class_parent, [child_yearbook])
                     added_schools[school_name][current_class][current_child] = {}
 

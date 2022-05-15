@@ -26,7 +26,12 @@ def create_yearbook(dir_params: {}, school_name: str, classroom: str, child: str
                                    "file.pickle")
     if os.path.exists(pickle_filename):
         print("Returning yearbook from pickle %s " % pickle_filename)
-        return create_yearbook_from_pickle(pickle_filename, parent_book)
+        _yearbook = create_yearbook_from_pickle(pickle_filename, parent_book)
+        if len(_yearbook.orders) == 0 and _yearbook.child is not None:
+            print("SKIPPING YEARBOOK AS IT HAS NO ORDERS")
+            _yearbook = None
+
+        return _yearbook
     else:
         # Create the yearbook from DB
         print("*********First creation of this yearbook********")
