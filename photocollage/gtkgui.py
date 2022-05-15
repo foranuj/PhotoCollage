@@ -584,7 +584,7 @@ class MainWindow(Gtk.Window):
         self.output_base_dir = os.path.join('/Users', getpass.getuser(), 'YearbookCreatorOut')
         self.input_base_dir = os.path.join(self.corpus_base_dir, 'YearbookCreatorInput')
         self.yearbook_parameters = {'max_count': 12,
-                                    'db_file_path': os.path.join(self.input_base_dir, 'RY_Small.db'),
+                                    'db_file_path': os.path.join(self.input_base_dir, 'RY.db'),
                                     'output_dir': os.path.join(self.output_base_dir, getpass.getuser()),
                                     'corpus_base_dir': self.corpus_base_dir}
 
@@ -951,7 +951,7 @@ class MainWindow(Gtk.Window):
             child_portraits = self.get_child_portrait_images(yearbook)
 
             for img in child_portraits:
-                if img.endswith("jpg") or img.endswith("png"):
+                if img.endswith("jpg") or img.endswith("png") or img.endswith("PNG") or img.endswith("jpeg") or img.endswith("JPG"):
                     try:
                         pixbuf = get_orientation_fixed_pixbuf(img)
                         image = Gtk.Image.new_from_pixbuf(pixbuf)
@@ -1216,12 +1216,17 @@ class MainWindow(Gtk.Window):
                     child_order_id = self.current_yearbook.orders[0].wix_order_id
                     custom_order_dir = os.path.join(self.corpus_base_dir, self.current_yearbook.school, 'CustomPhotos',
                                                     child_order_id)
+
+                    print(custom_order_dir)
+
                     if os.path.exists(custom_order_dir):
                         page_images = [os.path.join(custom_order_dir, img) for img in os.listdir(custom_order_dir) if
-                                       img.endswith("jpg") or img.endswith("jpeg") or img.endswith("png")]
+                                       img.endswith("jpg") or img.endswith("jpeg") or img.endswith("png")
+                                       or img.endswith('JPG') or img.endswith('PNG')]
                     else:
                         page_images = [os.path.join(self.corpus_base_dir, self.current_yearbook.school, "blank.png")]
 
+                    print(len(page_images))
                     first_photo_list: [Photo] = render.build_photolist(page_images)
                     page_collage = UserCollage(first_photo_list)
                     page_collage.make_page(options)
