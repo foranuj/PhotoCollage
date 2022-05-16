@@ -1,11 +1,11 @@
 import unittest
 from typing import Optional, List
 
-from data.sqllite.reader import get_album_details_for_school, get_child_orders
+from data.sqllite.reader import get_album_details_for_school, get_child_orders, get_desired_name, create_connection
 import getpass
 import os
 
-school_name = "JnR_2019_2021"
+school_name = "VargasElementary"
 
 
 def print_row(store, treepath, treeiter):
@@ -33,10 +33,16 @@ class TestReader(unittest.TestCase):
     def test_get_order_details_for_child(self):
         # Srivardhan Srinivasan
         order_details: Optional[List[(str, str)]] = get_child_orders(self.yearbook_parameters['db_file_path'],
-                                               child_name='Aarish Mathur')
+                                                                     child_name='Aarish Mathur')
 
         assert (len(order_details) == 1)
         assert (order_details[0] == 'Digital', '10039')
+
+    def test_desired_name(self):
+        order_id = '10067'
+
+        desired_name = get_desired_name(create_connection(self.yearbook_parameters['db_file_path']), order_id)
+        assert (desired_name == 'Elvis Ocegueda')
 
 
 if __name__ == '__main__':
