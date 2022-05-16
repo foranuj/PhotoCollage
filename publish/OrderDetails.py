@@ -5,6 +5,7 @@ class OrderDetails:
         self.interior_pdf_url = None
         self.cover_url = None
         self.lulu_job_id: str = None
+        self.child: str = None
 
         if self.cover_format == "Hardcover" or self.cover_format == "hardcover":
             self.pod_package_id = "0850X1100FCPRECW080CW444GXX"
@@ -25,6 +26,6 @@ class OrderDetails:
                                     "source_url": "%s"
                                 }
                             }
-            """ % (self.wix_order_id, self.pod_package_id, self.interior_pdf_url, self.cover_url)
+            """ % (self.wix_order_id + "_" + self.child, self.pod_package_id, self.interior_pdf_url, self.cover_url)
 
         return data

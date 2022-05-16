@@ -27,6 +27,14 @@ def create_yearbook(dir_params: {}, school_name: str, classroom: str, child: str
     if os.path.exists(pickle_filename):
         print("Returning yearbook from pickle %s " % pickle_filename)
         _yearbook = create_yearbook_from_pickle(pickle_filename, parent_book)
+
+        print("Updating orders to find the latest today...")
+        if _yearbook.child is not None:
+            child_orders: Optional[List[(str, str)]] = get_child_orders(dir_params["db_file_path"], _yearbook.child)
+            # We need at least 1 order
+            print("Will update the orders ")
+            _yearbook.orders = [OrderDetails(wix_order_id=order[1], cover_format=order[0]) for order in child_orders]
+
         if len(_yearbook.orders) == 0 and _yearbook.child is not None:
             print("SKIPPING YEARBOOK AS IT HAS NO ORDERS")
             _yearbook = None

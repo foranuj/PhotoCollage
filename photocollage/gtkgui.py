@@ -1580,7 +1580,9 @@ class MainWindow(Gtk.Window):
 
         # If we have orders for this yearbook, then let's create the necessary PDFs
         for order in _yearbook.pickle_yearbook.orders:
-            print("-----------------------------------%s----------------------------------" % order.cover_format)
+            order.child = _yearbook.child
+
+            print("--------------%s-----------------%s---------------------------" % (order.child, order.cover_format))
             if order.lulu_job_id is None:
                 print("We have no lulu print job for this order %s " % order.cover_format)
                 # Find the cover setting to create
