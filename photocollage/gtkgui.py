@@ -33,6 +33,7 @@ from gi.repository.Gtk import TreeStore
 from data.model.ModelCreator import get_tree_model
 from data.pickle.utils import get_pickle_path, get_jpg_path
 from data.rankers import RankerFactory
+from data.sqllite.reader import get_order_details_for_child, get_desired_name, create_connection
 from images.ImageWindow import ImageWindow
 from pdf_utils.pdf_compressor import compress
 from photocollage import APP_NAME, artwork, collage, render
@@ -45,12 +46,12 @@ from publish.OrderDetails import OrderDetails
 from publish.cover.CoverCreatorFactory import get_cover_settings, CoverSettings
 from publish.lulu import create_order_payload, get_header
 
-from util.google.drive.util import get_url_from_file_id, upload_with_item_check, get_file_id_from_url, upload_to_folder
+from util.google.drive.util import get_url_from_file_id, upload_with_item_check, get_file_id_from_url
 from util.utils import get_unique_list_insertion_order
 from yearbook.Yearbook import Yearbook, get_tag_list_for_page, pickle_yearbook
 from yearbook.Yearbook import Page
 
-from images.utils import get_orientation_fixed_pixbuf, get_minimum_creation_time, get_date_taken
+from images.utils import get_orientation_fixed_pixbuf
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('GdkPixbuf', '2.0')
@@ -498,15 +499,13 @@ def draw_title_on_canvas(canvas_cover, title: str, title_corner):
     frame1.addFromList([story_inframe], canvas_cover)
 
 
-def stitch_print_ready_cover(pdf_path: str, yearbook: Yearbook, cover_settings: CoverSettings):
+def stitch_print_ready_cover(pdf_path: str, yearbook: Yearbook, cover_settings: CoverSettings, conn=None):
     if cover_settings is None:
         return None
 
     dirname = os.path.dirname(pdf_path)
     base_name = os.path.basename(pdf_path)
     cover_path_pdf = os.path.join(dirname, base_name + "_cover.pdf")
-    front_cover_path = os.path.join(dirname, base_name + "_front_cover.pdf")
-    back_cover_path = os.path.join(dirname, base_name + "_back_cover.pdf")
 
     canvas_cover = Canvas(cover_path_pdf, pagesize=cover_settings.get_page_size())
 
@@ -514,33 +513,35 @@ def stitch_print_ready_cover(pdf_path: str, yearbook: Yearbook, cover_settings: 
 
     # First draw the back cover page
     top_left_back_cover = cover_settings.get_top_left_back_cover()
-    canvas_cover.drawImage(yearbook.pages[-1].image, top_left_back_cover[0], top_left_back_cover[1],
+    im = Image.open(yearbook.pages[-1].image)
+    im.thumbnail(cover_img_dims, Image.ANTIALIAS)
+    im.save(yearbook.pages[-1].image + "_resized.png")
+    canvas_cover.drawImage(yearbook.pages[-1].image + "_resized.png", top_left_back_cover[0], top_left_back_cover[1],
                            width=cover_img_dims[0], height=cover_img_dims[1])
 
     # Then draw the front cover page
     top_left_front_cover = cover_settings.get_top_left_front_cover()
 
-    canvas_cover.drawImage(yearbook.pages[0].image, top_left_front_cover[0],
+    im = Image.open(yearbook.pages[0].image)
+    im.thumbnail(cover_img_dims, Image.ANTIALIAS)
+    im.save(yearbook.pages[0].image + "_resized.png")
+    canvas_cover.drawImage(yearbook.pages[0].image + "_resized.png", top_left_front_cover[0],
                            top_left_front_cover[1],
                            width=cover_img_dims[0],
                            height=cover_img_dims[1])
 
-    front_cover_canvas = Canvas(front_cover_path, pagesize=cover_settings.get_cover_img_dims())
-    back_cover_canvas = Canvas(back_cover_path, pagesize=cover_settings.get_cover_img_dims())
-
-    front_cover_canvas.drawImage(yearbook.pages[0].image, 0, 0, width=cover_img_dims[0], height=cover_img_dims[1])
-    back_cover_canvas.drawImage(yearbook.pages[-1].image, 0, 0, width=cover_img_dims[0], height=cover_img_dims[1])
-
     if yearbook.child is not None:
         title_str = "\n".join(yearbook.child.split(" "))
 
+        # if conn is not None:
+        #    desired_title_str = get_desired_name(conn, order_id=yearbook.orders[0].wix_order_id)
+        #    print("Creating new title string, %s " % desired_title_str)
+        #    title_str = "\n".join(desired_title_str)
+
         draw_title_on_canvas(canvas_cover, title_str, cover_settings.get_title_corner())
-        draw_title_on_canvas(front_cover_canvas, title_str, (4.5 * inch, 9.25 * inch))
         print("Finished drawing title")
 
     canvas_cover.save()
-    front_cover_canvas.save()
-    back_cover_canvas.save()
 
     print("Finished writing pdf here %s " % cover_path_pdf)
     return cover_path_pdf
@@ -596,6 +597,7 @@ class MainWindow(Gtk.Window):
         self.order_items: [OrderDetails] = []
         self.corpus = None
         self.yearbook_to_file_map = {}
+        self.upload_urls_map = {}
 
         from data.sqllite.reader import get_school_list
         self.school_combo = Gtk.ComboBoxText.new()
@@ -640,6 +642,7 @@ class MainWindow(Gtk.Window):
 
         self.btn_print_all_books = Gtk.Button(label=_("Print All@Lulu"))
         self.btn_submit_order = Gtk.Button(label=_("ORDER"))
+        self.db_connection = create_connection(self.yearbook_parameters['db_file_path'])
 
         # on initialization
         self.treeModel: Gtk.TreeStore = get_tree_model(self.yearbook_parameters, self.school_combo.get_active_text())
@@ -1451,6 +1454,7 @@ class MainWindow(Gtk.Window):
     def print_all_pdfs(self, button):
         self.treeModel.foreach(self.create_pdfs)
         self.btn_submit_order.set_sensitive(True)
+        print(self.yearbook_to_file_map)
 
     def create_pdf_for_printing(self, yearbook: Yearbook, pdf_full_path: str, cover_format: str):
         if yearbook.parent_yearbook is None or yearbook.is_edited():
@@ -1514,22 +1518,15 @@ class MainWindow(Gtk.Window):
         return pdf_path
 
     def create_pdfs(self, store: Gtk.TreeStore, treepath: Gtk.TreePath, treeiter: Gtk.TreeIter):
+
         _yearbook: Yearbook = store[treeiter][0]
         self.current_yearbook = _yearbook
         extension = ".pdf"
         pdf_base_path = self.get_pdf_base_path(_yearbook)
 
-        cover_settings: CoverSettings = get_cover_settings("HardCover")
-
-        dirname = os.path.dirname(pdf_base_path)
-        base_name = os.path.basename(pdf_base_path)
-
-        stitch_print_ready_cover(pdf_base_path + "_HardCover",
-                                 _yearbook, cover_settings)
-
         cover_settings: CoverSettings = get_cover_settings("SoftCover")
         stitch_print_ready_cover(pdf_base_path + "_SoftCover",
-                                 _yearbook, cover_settings)
+                                 _yearbook, cover_settings, self.db_connection)
 
         pdf_full_path = pdf_base_path + "HardCover" + extension
         compressed_out_path = self.get_pdf_base_path(_yearbook) + "_compressed.pdf"
@@ -1542,23 +1539,23 @@ class MainWindow(Gtk.Window):
             print("Compressed PDF already exists... delete it if you want to create a new one")
             self.yearbook_to_file_map[_yearbook.get_id()] = compressed_out_path
 
-        merged_pdf_path = pdf_base_path + "_merged" + extension
-        front_cover_path = os.path.join(dirname, base_name + "_SoftCover_front_cover.pdf")
-        back_cover_path = os.path.join(dirname, base_name + "_SoftCover_back_cover.pdf")
-        blank_pdf_path = os.path.join(self.yearbook_parameters['corpus_base_dir'], self.current_yearbook.school,
-                                      'Theme', 'blank.pdf')
+        # merged_pdf_path = pdf_base_path + "_merged" + extension
+        # front_cover_path = os.path.join(dirname, base_name + "_SoftCover_front_cover.pdf")
+        # back_cover_path = os.path.join(dirname, base_name + "_SoftCover_back_cover.pdf")
+        # blank_pdf_path = os.path.join(self.yearbook_parameters['corpus_base_dir'], self.current_yearbook.school,
+        #                               'Theme', 'blank.pdf')
         # create_pdf_with_cover_pages(merged_pdf_path, front_cover_path, compressed_out_path,
         #                            back_cover_path, blank_pdf_path)
 
-    def create_and_upload_pdfs(self, store: Gtk.TreeStore, treepath: Gtk.TreePath, treeiter: Gtk.TreeIter):
+    def upload_printed_pdfs(self, store: Gtk.TreeStore, treepath: Gtk.TreePath, treeiter: Gtk.TreeIter):
         _yearbook: Yearbook = store[treeiter][0]
         print("****************************************************************")
-        print("UPLOADING FOR YEARBOOK %s " % _yearbook.print_yearbook_info())
+        print("UPLOADING FOR YEARBOOK ")
+        _yearbook.print_yearbook_info()
         print("STEP 1: Create_print_pdf %s " % str(treepath.get_depth()))
 
         extension = ".pdf"
         pdf_base_path = self.get_pdf_base_path(_yearbook)
-
         if _yearbook.child is None:
             print("""RETURNING FROM ORDERS SINCE THERE'S NO CHILD""")
             return
@@ -1580,6 +1577,7 @@ class MainWindow(Gtk.Window):
 
         # If we have orders for this yearbook, then let's create the necessary PDFs
         for order in _yearbook.pickle_yearbook.orders:
+
             print("-----------------------------------%s----------------------------------" % order.cover_format)
             if order.lulu_job_id is None:
                 print("We have no lulu print job for this order %s " % order.cover_format)
@@ -1589,7 +1587,7 @@ class MainWindow(Gtk.Window):
                 if cover_settings is not None:
                     print("STEP 2: Create_cover_pages with %s " % order.cover_format)
                     cover_path = stitch_print_ready_cover(pdf_base_path + "_" + order.cover_format + extension,
-                                                          _yearbook, cover_settings)
+                                                          _yearbook, cover_settings, self.db_connection)
                     # Upload the cover
                     order.cover_url = get_url_from_file_id(upload_with_item_check('1UWyYpHCUJ2lIUP0wOrTwtFeXYOXTd5x9',
                                                                                   cover_path,
@@ -1600,25 +1598,24 @@ class MainWindow(Gtk.Window):
                 else:
                     print("STEP 2: It's a digital file format, so no cover uploads")
 
-                # Now create the interior book
-                pdf_full_path = pdf_base_path + order.cover_format + extension
+                # Now get the interior book
+
                 print("STEP 3: Creating INTERNAL PDF File :------")
+                interior_pdf = self.yearbook_to_file_map[_yearbook.get_id()]
+                print("Interior pdf %s " % interior_pdf)
 
-                reused = self.create_pdf_for_printing(_yearbook, pdf_full_path, order.cover_format)
-
-                if reused:
-                    # We have to get the parent pdf url
-                    order.interior_pdf_url = _yearbook.parent_yearbook.get_interior_url(order.cover_format)
-                    print("Reusing URL %s " % order.interior_pdf_url)
+                if interior_pdf in self.upload_urls_map:
+                    order.interior_pdf_url = self.upload_urls_map[interior_pdf]
                 else:
-                    print("Uploading %s" % self.yearbook_to_file_map[_yearbook.get_id()])
                     order.interior_pdf_url = get_url_from_file_id(
                         upload_with_item_check('1UWyYpHCUJ2lIUP0wOrTwtFeXYOXTd5x9',
-                                               self.yearbook_to_file_map[_yearbook.get_id()],
+                                               interior_pdf,
                                                get_file_id_from_url(
                                                    order.interior_pdf_url)))
+                    self.upload_urls_map[interior_pdf] = order.interior_pdf_url
 
-            self.order_items.append(order)
+            if not order.cover_format == 'Digital':
+                self.order_items.append(order)
             print("------------------------------------------------------------------------")
 
         # Let's pickle the yearbook. Now we have a track of uploaded items on Google Drive
@@ -1628,7 +1625,7 @@ class MainWindow(Gtk.Window):
         return
 
     def submit_full_order(self, widget):
-        self.treeModel.foreach(self.create_and_upload_pdfs)
+        self.treeModel.foreach(self.upload_printed_pdfs)
         import json
         job_payload = create_order_payload(self.order_items, "RETHINK_YEARBOOKS")
         headers = get_header()

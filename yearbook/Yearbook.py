@@ -78,10 +78,6 @@ def create_yearbook_from_db(dir_params: {}, school_name: str, classroom: str, ch
         else:
             return None
 
-    if parent_book is not None:
-        print("Printing parent yearbook")
-        parent_book.print_yearbook_info()
-
     album_details: Cursor = get_album_details_for_school(db_file_path, school_name)
     pages: [Page] = []
     optional_page_offset = 0
@@ -95,6 +91,7 @@ def create_yearbook_from_db(dir_params: {}, school_name: str, classroom: str, ch
                 # The number of images in the folder should be greater than two
                 child_order_id = orders[0].wix_order_id
                 custom_order_dir = os.path.join(corpus_base_dir, school_name, 'CustomPhotos', child_order_id)
+                print(custom_order_dir)
                 if os.path.exists(custom_order_dir):
                     if len(os.listdir(custom_order_dir)) < 2:
                         continue

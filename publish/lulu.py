@@ -12,7 +12,7 @@ print_job_url = sandbox_base_url + "print-jobs/"
 job_details_url = sandbox_base_url + "print-jobs/%s/"
 all_jobs_url = 'https://api.sandbox.lulu.com/print-jobs/statistics/'
 
-LULU_MONTICELLO_POD_ID = "0827X1169FCPRELW060UW444MNG"
+LULU_MONTICELLO_POD_ID = "0827X1169FCPRELW060UW444GNG"
 
 
 def get_api_key(filename):
@@ -73,7 +73,7 @@ def get_line_items(student_books: [OrderDetails]) -> str:
 def create_order_payload(student_books: [OrderDetails], external_id="RethinkYearbooks") -> str:
     data = """{ "external_id": "%s", 
                 %s ,
-                "shipping_option_level": "MAIL",
+                "shipping_option_level": "PRIORITY_MAIL",
                 "contact_email": "rethinkyearbooks@gmail.com",
                 "shipping_address": %s
                }""" % (external_id, get_line_items(student_books), get_shipping_json())
