@@ -41,7 +41,7 @@ def get_child_orders(db_file: str, child_name: str):
     conn.close()
     return orders
 
-    
+
 def get_order_details_for_child(conn, child_name: str, school_id: str = None):
     cur = conn.cursor()
     query = 'SELECT o.product, o.[Order no.], r.id as id FROM WIXOrders o, roster r where r.name = \'%s\' and o.[' \
@@ -57,6 +57,22 @@ def get_order_details_for_child(conn, child_name: str, school_id: str = None):
         orders = None
 
     return orders
+
+
+def get_desired_name(conn, order_id):
+    cur = conn.cursor()
+    query = 'SELECT o.[Desired Name] FROM WIXOrders o where o.[Order no.] = %s' % order_id
+
+    print(query)
+    desired_name = ""
+    cursor = cur.execute(query)
+    try:
+        for row in cursor:
+            desired_name = str(row[0])
+    except:
+        pass
+
+    return desired_name
 
 
 def get_album_details_for_school(db_file: str, school_name: str):
