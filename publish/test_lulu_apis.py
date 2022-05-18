@@ -70,7 +70,7 @@ class LuluIntegrationTests(unittest.TestCase):
         get_job_details(id)
 
     def test_job_details_for(self):
-        get_job_details(client_id, client_secret, lulu_api_url, "834552")
+        get_job_details(client_id, client_secret, lulu_api_url, "834613")
 
     def test_submit_one_order(self):
         payload = self.get_one_item_payload()
@@ -83,6 +83,7 @@ class LuluIntegrationTests(unittest.TestCase):
         print(response.text)
 
     def test_submit_orders_in_multiple_batches(self):
+
         payload = self.get_full_payload()
         payload_json = json.loads(payload)
 
@@ -228,225 +229,114 @@ class LuluIntegrationTests(unittest.TestCase):
 
     def get_partial_payload(self):
         return """
-       { "external_id": "RETHINK_YEARBOOKS", 
+{ "external_id": "RETHINK_YEARBOOKS", 
                  "line_items" : [{
-                                "title": "10157_Amelie Laborie",
+                                "title": "10089_Kevin George Maquin",
                                 "pod_package_id": "0850X1100FCPREPB080CW444GXX",
                                 "quantity": 1,
                                 "interior": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/156xncQJXj9LF551ndWjZwRcgbfXks4In?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
+                                    "source_url": "https://www.googleapis.com/drive/v3/files/1oAbhrzqNCtqmoITSsQtpBAeak16ma_xp?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
                                 },
                                 "cover": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1j2tIMNmdduhSGUwWMXShoEbNLELPTDMq?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
+                                    "source_url": "https://www.googleapis.com/drive/v3/files/1R3Fji0iPIhHIeYKnopOx2vd3KA6k-9AS?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
                                 }
                             }
             ,{
-                                "title": "10102_Andre LeDoux",
+                                "title": "10159_Alexia Aldana",
                                 "pod_package_id": "0850X1100FCPREPB080CW444GXX",
                                 "quantity": 1,
                                 "interior": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/12Qlpid1nlUPRgGS2ygrcqv0z1GCtjZgu?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
+                                    "source_url": "https://www.googleapis.com/drive/v3/files/1YDuutq5-lbo42VMg3ELcFQAVjENisODH?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
                                 },
                                 "cover": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1NAIPzWODIgPzARliNXZiUsvT7t-onUIl?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
+                                    "source_url": "https://www.googleapis.com/drive/v3/files/15fhqpuxKIeJDSr3mzYuFsrD-Mu5x6fiG?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
                                 }
                             }
             ,{
-                                "title": "10076_Ayla Oktaymen",
+                                "title": "10144_Allison Moon",
                                 "pod_package_id": "0850X1100FCPREPB080CW444GXX",
                                 "quantity": 1,
                                 "interior": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1VjfyVnmODlaz9m-A64S3mPp4ADH6tQIx?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
+                                    "source_url": "https://www.googleapis.com/drive/v3/files/14zaqUshvKc0KkzXKfNj2RzgGQWWMqv8X?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
                                 },
                                 "cover": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1iOtFvjPQjml5UhdSmyLb_7jHbi8iziFy?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
+                                    "source_url": "https://www.googleapis.com/drive/v3/files/1lYOhgVqsZaVEsSNu52iQkYE0OKn1ofkO?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
                                 }
                             }
             ,{
-                                "title": "10148_Katie Estrada",
+                                "title": "Cash1_Samuel Gavino Tahuiton",
                                 "pod_package_id": "0850X1100FCPREPB080CW444GXX",
                                 "quantity": 1,
                                 "interior": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1lfCRbfTD9dJYxqzvYKSOdaRVL4fQF4Ul?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
+                                    "source_url": "https://www.googleapis.com/drive/v3/files/1PgXgvGHmKZ0W6mIzGf9Qh50Y9E4yOEkn?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
                                 },
                                 "cover": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1pxaCiIRKQ4h6OoS-NfpBr0_mu58QvY7S?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
+                                    "source_url": "https://www.googleapis.com/drive/v3/files/1_QKgxr1wlox1S-HEfmD-eCEnjVs05ryu?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
                                 }
                             }
             ,{
-                                "title": "10137_Noelle Perez",
+                                "title": "10121_Ahmet Uteuliyev",
                                 "pod_package_id": "0850X1100FCPREPB080CW444GXX",
                                 "quantity": 1,
                                 "interior": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1fFKUso1DEgR8lJIMPRVC-vB88S38dZ75?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
+                                    "source_url": "https://www.googleapis.com/drive/v3/files/1VL4C4LOCoZrXT_lJJWWn4NI4scOtdSwl?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
                                 },
                                 "cover": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/17Z5Eib6kY3EJtLQ1mNE3uuhius2HVen3?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
+                                    "source_url": "https://www.googleapis.com/drive/v3/files/1Ok-m_9dXE_KGagkSW_r87ty1Ciwox7-9?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
                                 }
                             }
             ,{
-                                "title": "10045_Sadie Rose Evangeline Sebastian",
+                                "title": "10189_Alfonso Saba Moreno",
                                 "pod_package_id": "0850X1100FCPREPB080CW444GXX",
                                 "quantity": 1,
                                 "interior": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1O1S-Az5erKIY2wYD1KHiT7b0A2of49Sp?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
+                                    "source_url": "https://www.googleapis.com/drive/v3/files/178JPSWr-0rh1asRLAxLGKHo6d4hWbrCg?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
                                 },
                                 "cover": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1R5YVndGykNcDQtXbjPUVK2OwTs3jwqZP?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
+                                    "source_url": "https://www.googleapis.com/drive/v3/files/1J4Q7n0PXJVaHjkwd2rCP5QmfW_qNQAXx?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
                                 }
                             }
             ,{
-                                "title": "10151_Shannon Gordon",
+                                "title": "10169_Astrid Rosgen",
                                 "pod_package_id": "0850X1100FCPREPB080CW444GXX",
                                 "quantity": 1,
                                 "interior": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1P6bJsuxCaUy2vAjRFpQw9lJLGg_t9qEh?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
+                                    "source_url": "https://www.googleapis.com/drive/v3/files/1xwP-MEyVlmWoimze1XAR5CnSP_QRJX1W?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
                                 },
                                 "cover": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1wE7Z4p013TaZ6XPc9xR3wNbkQKmEDbXE?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
+                                    "source_url": "https://www.googleapis.com/drive/v3/files/1UoeOTbd82_n4UMfTps6wR9IR9eTEnwZP?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
                                 }
                             }
             ,{
-                                "title": "10058_Alex Gonzales Barajas",
+                                "title": "10097_Fiona Corcoran",
                                 "pod_package_id": "0850X1100FCPREPB080CW444GXX",
                                 "quantity": 1,
                                 "interior": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1LnFSZUbjaVoPYtX-YQlBIA53HlxqdRyF?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
+                                    "source_url": "https://www.googleapis.com/drive/v3/files/12kREZua9Dd1ZaM413o7vft0D8Nps-Z6T?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
                                 },
                                 "cover": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1_F5nyGRU26JRJUmDRoQZXLWzvztqAF90?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
+                                    "source_url": "https://www.googleapis.com/drive/v3/files/11LYpWyUzKH9voMpdivMo8mAYNA9rdvPk?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
                                 }
                             }
             ,{
-                                "title": "10055_Evie Smith",
+                                "title": "10053_Theodore Joseph Cincotta",
                                 "pod_package_id": "0850X1100FCPREPB080CW444GXX",
                                 "quantity": 1,
                                 "interior": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1IMchLlaEjH0DKa4aCiBoVtslCez9lx_Q?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
+                                    "source_url": "https://www.googleapis.com/drive/v3/files/1M5li6ktkgCvBHHeWcgZH_uW3TYK0dUZh?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
                                 },
                                 "cover": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1z_IjZr1VFSJrIX2TYR-g4p6p3CX67ZZK?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
+                                    "source_url": "https://www.googleapis.com/drive/v3/files/1lUf4RGPCfyX9TsjN5UPQDu0HN_BZYs4l?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
                                 }
-                            }
-            ,{
-                                "title": "10184_Ezra Gallardo",
+                            }, {
+                                "title": "10066_NoName",
                                 "pod_package_id": "0850X1100FCPREPB080CW444GXX",
                                 "quantity": 1,
                                 "interior": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1OJXT3qpDEiN5cDBHkA7W7B55Kp2aFeZR?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
+                                    "source_url": "https://www.googleapis.com/drive/v3/files/1uHk02BsmBzTvzjTy46YpeGQHU2ysmoEb?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
                                 },
                                 "cover": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1m0-a2HhqZypefp-dwsIFDufVpmBR8kxY?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
-                                }
-                            }
-            ,{
-                                "title": "C0007_Gabriela Herrera",
-                                "pod_package_id": "0850X1100FCPREPB080CW444GXX",
-                                "quantity": 1,
-                                "interior": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1r80kOqWSDN-fGQAR2sbYH8q4YOh6Hlig?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
-                                },
-                                "cover": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1TPhrF-XHlQ6CMsSoD9ySs_qHb6aRBOJs?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
-                                }
-                            }
-            ,{
-                                "title": "Cash5_Hostin Menjivar Reyes",
-                                "pod_package_id": "0850X1100FCPREPB080CW444GXX",
-                                "quantity": 1,
-                                "interior": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1Byg4_RoCoL_KKXLfYQ0Uh_Do94kTlCA9?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
-                                },
-                                "cover": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1sTFqsz-Y6DOzADWlXMSnjbqwMz7ZzMnt?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
-                                }
-                            }
-            ,{
-                                "title": "10175_Leia Roschke",
-                                "pod_package_id": "0850X1100FCPREPB080CW444GXX",
-                                "quantity": 1,
-                                "interior": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1D4RxzQhau8Zvw-htEZ8_cMUaOPlW9mo8?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
-                                },
-                                "cover": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1O3RsXbT5LU-_gPJkHFht-rwZI5DuTijF?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
-                                }
-                            }
-            ,{
-                                "title": "10173_Olivia Garcia Bermudez",
-                                "pod_package_id": "0850X1100FCPREPB080CW444GXX",
-                                "quantity": 1,
-                                "interior": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1mrGjY5cPpc9NJpqPdD16HEEKyWQqZX03?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
-                                },
-                                "cover": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1tL2bNdnxVjEEWZfrwCOd5MEPQvKd1Nyd?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
-                                }
-                            }
-            ,{
-                                "title": "10065_Robert Sana",
-                                "pod_package_id": "0850X1100FCPREPB080CW444GXX",
-                                "quantity": 1,
-                                "interior": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1xw1AgcMHPwM2naEr3A9rqqvzUAU5I007?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
-                                },
-                                "cover": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1FE0hlkxh9Gn7oWHA7aHcQ23PegepfUgR?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
-                                }
-                            }
-            ,{
-                                "title": "10170_Saariyah Ahmed",
-                                "pod_package_id": "0850X1100FCPREPB080CW444GXX",
-                                "quantity": 1,
-                                "interior": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1noFw-KMwxMmyu9FMqV-WnLmVZxOB80h2?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
-                                },
-                                "cover": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/101WqpUDHIqEwRTb6qpDZdYal6WUIJ2Mg?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
-                                }
-                            }
-            ,{
-                                "title": "10156_Sophia Antonio Herrera",
-                                "pod_package_id": "0850X1100FCPREPB080CW444GXX",
-                                "quantity": 1,
-                                "interior": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1G2Ima1lxZeb4eczLTQmybnZXrUanLgys?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
-                                },
-                                "cover": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1fNbwCInj0VprsPq4fSd8iYqUwidyRDxD?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
-                                }
-                            }
-            ,{
-                                "title": "C0006_Adrienne Ko",
-                                "pod_package_id": "0850X1100FCPREPB080CW444GXX",
-                                "quantity": 1,
-                                "interior": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1fxQiQAQONA2E1Ya1nca-Vm_ztQwMKbDv?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
-                                },
-                                "cover": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1ZisPLMRN8BwKY3TYmzUQ8F0F6_pIbScN?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
-                                }
-                            }
-            ,{
-                                "title": "10172_Ethan Ayala",
-                                "pod_package_id": "0850X1100FCPREPB080CW444GXX",
-                                "quantity": 1,
-                                "interior": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1prKPKUaNdWs6cEcAYzxP3uHNnIW8K2Hv?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
-                                },
-                                "cover": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1XMl2SFl64kqMiKQtFau44NY4q7h_lLX8?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
-                                }
-                            }
-            ,{
-                                "title": "10077_Javier Rodriguez Castillo",
-                                "pod_package_id": "0850X1100FCPREPB080CW444GXX",
-                                "quantity": 1,
-                                "interior": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1e50esnvaRwQMfaqeg5aYoNsEbwcbiceC?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
-                                },
-                                "cover": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/19wsorG8s_N4bjTpYHarO2epDhrQaEGeU?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
+                                    "source_url": "https://www.googleapis.com/drive/v3/files/1_j6L5q3DF4OJPTG3-N8v5dQ4Hda-52-z?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
                                 }
                             }
             ] ,
@@ -465,7 +355,7 @@ class LuluIntegrationTests(unittest.TestCase):
         "is_business":true
     }
                }
-        """
+         """
 
     def get_full_payload(self):
         return """ 

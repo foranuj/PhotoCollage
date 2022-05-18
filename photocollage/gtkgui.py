@@ -1622,6 +1622,77 @@ class MainWindow(Gtk.Window):
 
         return
 
+    def upload_printed_pdfs_to_dropbox(self, store: Gtk.TreeStore, treepath: Gtk.TreePath, treeiter: Gtk.TreeIter):
+        from util.dropbox.util import upload_file
+
+        _yearbook: Yearbook = store[treeiter][0]
+        print("****************************************************************")
+        print("UPLOADING FOR YEARBOOK ")
+        _yearbook.print_yearbook_info()
+        print("STEP 1: Create_print_pdf %s " % str(treepath.get_depth()))
+
+        extension = ".pdf"
+        pdf_base_path = self.get_pdf_base_path(_yearbook)
+        if _yearbook.child is None:
+            print("""RETURNING FROM ORDERS SINCE THERE'S NO CHILD""")
+            return
+
+            # Let's create three dummy orders
+            # Hardcover, softcover and digital.
+            order_hard_cover = OrderDetails("root", "HardCover")
+            order_hard_cover.interior_pdf_url = get_url_from_file_id('1OukkFgfBhWFYUmPPFOL1hyHAQ3JYrIiW')
+
+            order_soft_cover = OrderDetails("root", "SoftCover")
+            order_soft_cover.interior_pdf_url = order_hard_cover.interior_pdf_url
+
+            order_digital = OrderDetails("root", "Digital")
+            order_digital.interior_pdf_url = get_url_from_file_id("1nLWav7G19LlOEapMOdNiEvq61tvbf_de")
+
+            # Let's upload only the original PDF if required
+            _yearbook.pickle_yearbook.orders = [order_digital, order_soft_cover, order_hard_cover]
+            pickle_yearbook(_yearbook, self.yearbook_parameters['output_dir'])
+
+        # If we have orders for this yearbook, then let's create the necessary PDFs
+        for order in _yearbook.pickle_yearbook.orders:
+            order.child = _yearbook.child
+            print("--------------%s-----------------%s---------------------------" % (order.child, order.cover_format))
+            if order.lulu_job_id is None:
+                print("We have no lulu print job for this order %s " % order.cover_format)
+                # Find the cover setting to create
+                cover_settings: CoverSettings = get_cover_settings(order.cover_format)
+                # Upload new cover
+                if cover_settings is not None:
+                    print("STEP 2: Create_cover_pages with %s " % order.cover_format)
+                    cover_path = stitch_print_ready_cover(pdf_base_path + "_" + order.cover_format + extension,
+                                                          _yearbook, cover_settings, self.db_connection)
+
+                    base_name = "_".join(_yearbook.get_file_id().split()) + "cover.pdf"
+                    print("Cover name %s " % base_name)
+                    # Upload the cover
+                    order.cover_url = upload_file(cover_path, base_name)
+                    print("STEP 2: Finished uploading cover file %s " % order.cover_url)
+                else:
+                    print("STEP 2: It's a digital file format, so no cover uploads")
+
+                # Now get the interior book
+
+                print("STEP 3: Creating INTERNAL PDF File :------")
+                interior_pdf = self.yearbook_to_file_map[_yearbook.get_id()]
+                print("Interior pdf %s " % interior_pdf)
+                base_name = "_".join(_yearbook.get_file_id().split()) + "interior.pdf"
+                print("Base name %s " % base_name)
+                order.interior_pdf_url = upload_file(interior_pdf, base_name)
+
+            if not order.cover_format == 'Digital':
+                self.order_items.append(order)
+            print("------------------------------------------------------------------------")
+
+        # Let's pickle the yearbook. Now we have a track of uploaded items on Google Drive
+        pickle_yearbook(_yearbook, self.yearbook_parameters['output_dir'])
+        print("****************************************************************")
+
+        return
+
     def get_uploaded_urls(self, store: Gtk.TreeStore, treepath: Gtk.TreePath, treeiter: Gtk.TreeIter):
         _yearbook: Yearbook = store[treeiter][0]
         print("****************************************************************")
@@ -1650,8 +1721,7 @@ class MainWindow(Gtk.Window):
         return
 
     def submit_full_order(self, widget):
-        self.treeModel.foreach(self.get_uploaded_urls)
-        import json
+        self.treeModel.foreach(self.upload_printed_pdfs_to_dropbox)
 
         chunk_size = 15
         for i in range(0, len(self.order_items), chunk_size):
@@ -1664,6 +1734,11 @@ class MainWindow(Gtk.Window):
 
             print(job_payload)
             print("----------------------------Chucked payload Done ------------------------")
+
+        print("--------- ALSO GENERATE FULL PAYLOAD ---------")
+        job_payload = create_order_payload(self.order_items, "RETHINK_YEARBOOKS")
+        print(job_payload)
+        print("--------- END FULL PAYLOAD ---------")
 
         return job_payload
 

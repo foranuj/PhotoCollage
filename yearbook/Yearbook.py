@@ -209,6 +209,9 @@ class Yearbook(GObject.GObject):
     def get_id(self):
         return "%s :-> %s :-> %s" % (self.pickle_yearbook.school, self.pickle_yearbook.classroom, self.pickle_yearbook.child)
 
+    def get_file_id(self):
+        return "%s_%s_%s" % (self.pickle_yearbook.school, self.pickle_yearbook.classroom, self.pickle_yearbook.child)
+
     def is_edited(self):
         from functools import reduce
 
