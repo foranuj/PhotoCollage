@@ -2,10 +2,7 @@ from functools import reduce
 
 import gi
 
-import gi
-
 from data.sqllite.reader import create_connection, get_schools, get_all_rows, get_order_details_for_child
-from publish.OrderDetails import OrderDetails
 
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
@@ -73,6 +70,7 @@ def get_tree_model(dir_params: {}, school_selection: str) -> Gtk.TreeStore:
                     print("CHILD HAS AN ORDER PLACED, SO ADDING TO TREE")
                     treestore.append(class_parent, [child_yearbook])
                     added_schools[school_name][current_class][current_child] = {}
+                    count_children = count_children + 1
 
     print("Total number of children added %s" % count_children)
     conn.close()

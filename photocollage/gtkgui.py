@@ -44,11 +44,11 @@ from photocollage.dialogs.SettingsDialog import SettingsDialog
 from data.readers.default import corpus_processor
 from publish.OrderDetails import OrderDetails
 from publish.cover.CoverCreatorFactory import get_cover_settings, CoverSettings
-from publish.lulu import create_order_payload, get_header
+from publish.lulu import create_order_payload, get_header, client_id, client_secret, lulu_api_url
 
 from util.google.drive.util import get_url_from_file_id, upload_with_item_check, get_file_id_from_url
 from util.utils import get_unique_list_insertion_order
-from yearbook.Yearbook import Yearbook, get_tag_list_for_page, pickle_yearbook
+from yearbook.Yearbook import Yearbook, get_tag_list_for_page, pickle_yearbook, create_yearbook_from_pickle
 from yearbook.Yearbook import Page
 
 from images.utils import get_orientation_fixed_pixbuf
@@ -954,7 +954,8 @@ class MainWindow(Gtk.Window):
             child_portraits = self.get_child_portrait_images(yearbook)
 
             for img in child_portraits:
-                if img.endswith("jpg") or img.endswith("png") or img.endswith("PNG") or img.endswith("jpeg") or img.endswith("JPG"):
+                if img.endswith("jpg") or img.endswith("png") or img.endswith("PNG") or img.endswith(
+                        "jpeg") or img.endswith("JPG"):
                     try:
                         pixbuf = get_orientation_fixed_pixbuf(img)
                         image = Gtk.Image.new_from_pixbuf(pixbuf)
@@ -1577,8 +1578,8 @@ class MainWindow(Gtk.Window):
 
         # If we have orders for this yearbook, then let's create the necessary PDFs
         for order in _yearbook.pickle_yearbook.orders:
-
-            print("-----------------------------------%s----------------------------------" % order.cover_format)
+            order.child = _yearbook.child
+            print("--------------%s-----------------%s---------------------------" % (order.child, order.cover_format))
             if order.lulu_job_id is None:
                 print("We have no lulu print job for this order %s " % order.cover_format)
                 # Find the cover setting to create
@@ -1589,7 +1590,7 @@ class MainWindow(Gtk.Window):
                     cover_path = stitch_print_ready_cover(pdf_base_path + "_" + order.cover_format + extension,
                                                           _yearbook, cover_settings, self.db_connection)
                     # Upload the cover
-                    order.cover_url = get_url_from_file_id(upload_with_item_check('1UWyYpHCUJ2lIUP0wOrTwtFeXYOXTd5x9',
+                    order.cover_url = get_url_from_file_id(upload_with_item_check('1cp2LyftBr3t3T3ImJIiBEtxromlSwawm',
                                                                                   cover_path,
                                                                                   get_file_id_from_url(
                                                                                       order.cover_url)))
@@ -1603,16 +1604,13 @@ class MainWindow(Gtk.Window):
                 print("STEP 3: Creating INTERNAL PDF File :------")
                 interior_pdf = self.yearbook_to_file_map[_yearbook.get_id()]
                 print("Interior pdf %s " % interior_pdf)
+                order.interior_pdf_url = get_url_from_file_id(
+                    upload_with_item_check('1cp2LyftBr3t3T3ImJIiBEtxromlSwawm',
+                                           interior_pdf,
+                                           get_file_id_from_url(
+                                               order.interior_pdf_url)))
 
-                if interior_pdf in self.upload_urls_map:
-                    order.interior_pdf_url = self.upload_urls_map[interior_pdf]
-                else:
-                    order.interior_pdf_url = get_url_from_file_id(
-                        upload_with_item_check('1UWyYpHCUJ2lIUP0wOrTwtFeXYOXTd5x9',
-                                               interior_pdf,
-                                               get_file_id_from_url(
-                                                   order.interior_pdf_url)))
-                    self.upload_urls_map[interior_pdf] = order.interior_pdf_url
+                # self.upload_urls_map[interior_pdf] = order.interior_pdf_url
 
             if not order.cover_format == 'Digital':
                 self.order_items.append(order)
@@ -1624,17 +1622,124 @@ class MainWindow(Gtk.Window):
 
         return
 
+    def upload_printed_pdfs_to_dropbox(self, store: Gtk.TreeStore, treepath: Gtk.TreePath, treeiter: Gtk.TreeIter):
+        from util.dropbox.util import upload_file
+
+        _yearbook: Yearbook = store[treeiter][0]
+        print("****************************************************************")
+        print("UPLOADING FOR YEARBOOK ")
+        _yearbook.print_yearbook_info()
+        print("STEP 1: Create_print_pdf %s " % str(treepath.get_depth()))
+
+        extension = ".pdf"
+        pdf_base_path = self.get_pdf_base_path(_yearbook)
+        if _yearbook.child is None:
+            print("""RETURNING FROM ORDERS SINCE THERE'S NO CHILD""")
+            return
+
+            # Let's create three dummy orders
+            # Hardcover, softcover and digital.
+            order_hard_cover = OrderDetails("root", "HardCover")
+            order_hard_cover.interior_pdf_url = get_url_from_file_id('1OukkFgfBhWFYUmPPFOL1hyHAQ3JYrIiW')
+
+            order_soft_cover = OrderDetails("root", "SoftCover")
+            order_soft_cover.interior_pdf_url = order_hard_cover.interior_pdf_url
+
+            order_digital = OrderDetails("root", "Digital")
+            order_digital.interior_pdf_url = get_url_from_file_id("1nLWav7G19LlOEapMOdNiEvq61tvbf_de")
+
+            # Let's upload only the original PDF if required
+            _yearbook.pickle_yearbook.orders = [order_digital, order_soft_cover, order_hard_cover]
+            pickle_yearbook(_yearbook, self.yearbook_parameters['output_dir'])
+
+        # If we have orders for this yearbook, then let's create the necessary PDFs
+        for order in _yearbook.pickle_yearbook.orders:
+            order.child = _yearbook.child
+            print("--------------%s-----------------%s---------------------------" % (order.child, order.cover_format))
+            if order.lulu_job_id is None:
+                print("We have no lulu print job for this order %s " % order.cover_format)
+                # Find the cover setting to create
+                cover_settings: CoverSettings = get_cover_settings(order.cover_format)
+                # Upload new cover
+                if cover_settings is not None:
+                    print("STEP 2: Create_cover_pages with %s " % order.cover_format)
+                    cover_path = stitch_print_ready_cover(pdf_base_path + "_" + order.cover_format + extension,
+                                                          _yearbook, cover_settings, self.db_connection)
+
+                    base_name = "_".join(_yearbook.get_file_id().split()) + "cover.pdf"
+                    print("Cover name %s " % base_name)
+                    # Upload the cover
+                    order.cover_url = upload_file(cover_path, base_name)
+                    print("STEP 2: Finished uploading cover file %s " % order.cover_url)
+                else:
+                    print("STEP 2: It's a digital file format, so no cover uploads")
+
+                # Now get the interior book
+
+                print("STEP 3: Creating INTERNAL PDF File :------")
+                interior_pdf = self.yearbook_to_file_map[_yearbook.get_id()]
+                print("Interior pdf %s " % interior_pdf)
+                base_name = "_".join(_yearbook.get_file_id().split()) + "interior.pdf"
+                print("Base name %s " % base_name)
+                order.interior_pdf_url = upload_file(interior_pdf, base_name)
+
+            if not order.cover_format == 'Digital':
+                self.order_items.append(order)
+            print("------------------------------------------------------------------------")
+
+        # Let's pickle the yearbook. Now we have a track of uploaded items on Google Drive
+        pickle_yearbook(_yearbook, self.yearbook_parameters['output_dir'])
+        print("****************************************************************")
+
+        return
+
+    def get_uploaded_urls(self, store: Gtk.TreeStore, treepath: Gtk.TreePath, treeiter: Gtk.TreeIter):
+        _yearbook: Yearbook = store[treeiter][0]
+        print("****************************************************************")
+        print("UPLOADING FOR YEARBOOK ")
+
+        if _yearbook.child is None:
+            print("""RETURNING FROM ORDERS SINCE THERE'S NO CHILD""")
+            return
+
+        pickle_path = get_pickle_path(self.yearbook_parameters['output_dir'], _yearbook.school,
+                                      _yearbook.classroom, _yearbook.child)
+        pickle_filename = os.path.join(pickle_path, "file.pickle")
+
+        _yearbook = create_yearbook_from_pickle(pickle_filename, None)
+        # If we have orders for this yearbook, then let's create the necessary PDFs
+        for order in _yearbook.pickle_yearbook.orders:
+            order.child = _yearbook.child
+            print("--------------%s-----------------%s---------------------------" % (order.child, order.cover_format))
+
+            if not order.cover_format == 'Digital':
+                self.order_items.append(order)
+            print("------------------------------------------------------------------------")
+
+        print("****************************************************************")
+
+        return
+
     def submit_full_order(self, widget):
-        self.treeModel.foreach(self.upload_printed_pdfs)
-        import json
+        self.treeModel.foreach(self.upload_printed_pdfs_to_dropbox)
+
+        chunk_size = 15
+        for i in range(0, len(self.order_items), chunk_size):
+            chunks = self.order_items[i:i + chunk_size]
+            print("----------------------------Chucked payload")
+            job_payload = create_order_payload(chunks, "RETHINK_YEARBOOKS")
+
+            with open("/Users/anshah/Desktop/chunk_%s" % i, 'w') as f:
+                f.write(job_payload)
+
+            print(job_payload)
+            print("----------------------------Chucked payload Done ------------------------")
+
+        print("--------- ALSO GENERATE FULL PAYLOAD ---------")
         job_payload = create_order_payload(self.order_items, "RETHINK_YEARBOOKS")
-        headers = get_header()
-        # response = requests.request('POST', print_job_url, data=job_payload, headers=headers)
-
-        # Now we need to parse the response, to make sure the order went through
-        # response_json = json.loads(response.text)
-
         print(job_payload)
+        print("--------- END FULL PAYLOAD ---------")
+
         return job_payload
 
     def pin_page_left(self, button):

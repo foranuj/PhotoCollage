@@ -8,11 +8,17 @@ client_id_sandbox = '0f945822-ca71-413b-b986-d0037c7e0b05'
 client_secret_sandbox = '89cc568b-44dd-477a-a0f4-0e1bd30f7ce5'
 sandbox_api_url = "https://api.sandbox.lulu.com/auth/realms/glasstree/protocol/openid-connect/token"
 sandbox_base_url = "https://api.sandbox.lulu.com/"
-print_job_url = sandbox_base_url + "print-jobs/"
-job_details_url = sandbox_base_url + "print-jobs/%s/"
-all_jobs_url = 'https://api.sandbox.lulu.com/print-jobs/statistics/'
+lulu_base_url = "https://api.lulu.com/"
+lulu_api_url = "https://api.lulu.com/auth/realms/glasstree/protocol/openid-connect/token"
+
+print_job_url = lulu_base_url + "print-jobs/"
+job_details_url = lulu_base_url + "print-jobs/%s/"
+sandbox_print_job_url = sandbox_base_url + "print-jobs/"
+
 
 LULU_MONTICELLO_POD_ID = "0827X1169FCPRELW060UW444GNG"
+client_id = "4bae975e-030d-4da7-a320-c7e3441f4c41"
+client_secret = "d03ac1bd-32b2-43ba-902c-bb838b37e4ce"
 
 
 def get_api_key(filename):
@@ -28,9 +34,9 @@ def get_api_key(filename):
         print("'%s' file not found" % filename)
 
 
-def get_access_token_json(client_id: str, client_secret: str) -> str:
+def get_access_token_json(client_id: str, client_secret: str, api_url: str = sandbox_api_url) -> str:
     data = {'grant_type': 'client_credentials'}
-    access_token_response = requests.post(sandbox_api_url, data=data, allow_redirects=False,
+    access_token_response = requests.post(api_url, data=data, allow_redirects=False,
                                           auth=(client_id, client_secret))
     return access_token_response.json()
 
@@ -70,6 +76,18 @@ def get_line_items(student_books: [OrderDetails]) -> str:
     return """ "line_items" : [""" + internal_line_items + "]"
 
 
+def create_order_with_line_items(internal_line_items, external_id="RethinkYearbooks") -> str:
+    line_items = """ "line_items" : [""" + internal_line_items[1:-1] + "]"
+
+    data = """{ "external_id": "%s", 
+                %s ,
+                "shipping_option_level": "PRIORITY_MAIL",
+                "contact_email": "rethinkyearbooks@gmail.com",
+                "shipping_address": %s
+               }""" % (external_id, line_items, get_shipping_json())
+    return data
+
+
 def create_order_payload(student_books: [OrderDetails], external_id="RethinkYearbooks") -> str:
     data = """{ "external_id": "%s", 
                 %s ,
@@ -80,37 +98,55 @@ def create_order_payload(student_books: [OrderDetails], external_id="RethinkYear
     return data
 
 
-def get_header() -> str:
+def get_header(id, secret, api_url: str = sandbox_api_url) -> str:
     headers = {
         'Content-Type': 'application/json',
         'Cache-Control': 'no-cache',
-        'Authorization': 'Bearer %s' % get_access_token_json(client_id_sandbox, client_secret_sandbox)[
+        'Authorization': 'Bearer %s' % get_access_token_json(id, secret, api_url)[
             'access_token'],
     }
     return headers
 
 
-def submit_full_order(student_books: [OrderDetails], external_id="RethinkYearbooks"):
-    job_payload = create_order_payload(student_books, external_id)
-    headers = {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-cache',
-        'Authorization': 'Bearer %s' % get_access_token_json(client_id_sandbox, client_secret_sandbox)['access_token'],
-    }
+def submit_order_with_payload(id, secret, api_url, job_payload):
+    headers = get_header(id, secret, api_url)
 
     response = requests.request('POST', print_job_url, data=job_payload, headers=headers)
     return response
 
 
-def get_job_details(lulu_job_id: str):
+def submit_full_order(student_books: [OrderDetails], id, secret, api_url, external_id="RethinkYearbooks"):
+    job_payload = create_order_payload(student_books, external_id)
+    return submit_order_with_payload(id, secret, api_url, job_payload)
+
+
+def get_job_details(id, secret, api_url, lulu_job_id: str):
     url = job_details_url % lulu_job_id
     print(url)
-    headers = {
-        'Cache-Control': 'no-cache',
-        'Authorization': 'Bearer %s' % get_access_token_json(client_id_sandbox, client_secret_sandbox)['access_token'],
-    }
+    headers = get_header(id, secret, api_url)
 
     response = requests.request('GET', url, headers=headers)
 
-    print(response.text)
+    #print(response.text)
+    lulu_output = json.loads(response.text)
+    [print(str(line_item['title']) + "_" + str(line_item['status'])) for line_item in lulu_output['line_items']]
+
     return response.text
+
+
+def main():
+    from data.model.ModelCreator import get_tree_model
+    import os
+    import getpass
+
+    corpus_base_dir = os.path.join('/Users', getpass.getuser(), 'GoogleDrive')
+    output_base_dir = os.path.join('/Users', getpass.getuser(), 'YearbookCreatorOut')
+    input_base_dir = os.path.join(corpus_base_dir, 'YearbookCreatorInput')
+    yearbook_parameters = {'max_count': 12,
+                           'db_file_path': os.path.join(input_base_dir, 'RY.db'),
+                           'output_dir': os.path.join(output_base_dir, getpass.getuser()),
+                           'corpus_base_dir': corpus_base_dir}
+
+    treeModel = get_tree_model(yearbook_parameters, "VargasElementary")
+
+    treeModel.foreach()
