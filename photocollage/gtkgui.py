@@ -516,9 +516,9 @@ def stitch_print_ready_cover(pdf_path: str, yearbook: Yearbook, cover_settings: 
 
     # First draw the back cover page
     top_left_back_cover = cover_settings.get_top_left_back_cover()
-    im = Image.open(yearbook.pages[-1].image)
-    im.thumbnail(cover_img_dims, Image.ANTIALIAS)
-    im.save(yearbook.pages[-1].image + "_resized.png")
+    with Image.open(yearbook.pages[-1].image) as im:
+        im.thumbnail(cover_img_dims, Image.ANTIALIAS)
+        im.save(yearbook.pages[-1].image + "_resized.png")
     canvas_cover.drawImage(yearbook.pages[-1].image + "_resized.png", top_left_back_cover[0], top_left_back_cover[1],
                            width=cover_img_dims[0], height=cover_img_dims[1])
     back_cover.drawImage(yearbook.pages[-1].image + "_resized.png", top_left_back_cover[0], top_left_back_cover[1],
@@ -527,9 +527,9 @@ def stitch_print_ready_cover(pdf_path: str, yearbook: Yearbook, cover_settings: 
     # Then draw the front cover page
     top_left_front_cover = cover_settings.get_top_left_front_cover()
 
-    im = Image.open(yearbook.pages[0].image)
-    im.thumbnail(cover_img_dims, Image.ANTIALIAS)
-    im.save(yearbook.pages[0].image + "_resized.png")
+    with Image.open(yearbook.pages[0].image) as im:
+        im.thumbnail(cover_img_dims, Image.ANTIALIAS)
+        im.save(yearbook.pages[0].image + "_resized.png")
     canvas_cover.drawImage(yearbook.pages[0].image + "_resized.png", top_left_front_cover[0],
                            top_left_front_cover[1],
                            width=cover_img_dims[0],
@@ -1047,6 +1047,7 @@ class MainWindow(Gtk.Window):
                     img_box.connect("button_press_event", self.invoke_add_image, img, candidate_images)
                     flow_box.add(img_box)
                     counter = counter + 1
+                    del image
 
             except OSError:
                 # raise BadPhoto(name)
