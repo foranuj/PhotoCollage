@@ -108,24 +108,24 @@ def build_photolist(filelist: [str]) -> [Photo]:
 
     for name in filelist:
         try:
-            img = PIL.Image.open(name)
+            with PIL.Image.open(name) as img:
+                w, h = img.size
+
+                orientation = 0
+                try:
+                    exif = img._getexif()
+                    if 274 in exif:  # orientation tag
+                        orientation = exif[274]
+                        if orientation == 6 or orientation == 8:
+                            w, h = h, w
+                except Exception:
+                    pass
+
+                ret.append(Photo(name, w, h, orientation))
         except OSError:
             print("Building list --> Skipping a photo: %s" % name)
             continue
 
-        w, h = img.size
-
-        orientation = 0
-        try:
-            exif = img._getexif()
-            if 274 in exif:  # orientation tag
-                orientation = exif[274]
-                if orientation == 6 or orientation == 8:
-                    w, h = h, w
-        except Exception:
-            pass
-
-        ret.append(Photo(name, w, h, orientation))
     return ret
 
 
@@ -193,6 +193,9 @@ class RenderingTask(Thread):
                 draw.line(Xy + XY, fill=color)
                 draw.line(xy + XY, fill=color)
                 draw.line(xY + Xy, fill=color)
+
+                del draw
+
         return canvas
 
     def draw_publishing_borders(self, canvas, offset):
@@ -207,6 +210,8 @@ class RenderingTask(Thread):
                 xy = (col.x + x_offset, y_offset + c.y - border / 2)
                 XY = (col.x + col.w + x_offset, y_offset + c.y + border / 2)
                 draw.rectangle(xy + XY, color)
+
+        del draw
 
         return canvas
 
@@ -244,6 +249,7 @@ class RenderingTask(Thread):
                         XY = (x_offset + col.x + border / 2, y_offset + c.y + c.h)
                         draw.rectangle(xy + XY, color)
 
+        del draw
         return canvas
 
     def resize_photo(self, cell, use_cache=False):
@@ -351,30 +357,30 @@ class RenderingTask(Thread):
 
             if self.output_file:
                 print("Saving image at ...", self.output_file)
-                background = PIL.Image.open(self.yearbook_page.image).convert("RGBA")
-                dashed_img_draw = DashedImageDraw(background)
+                with PIL.Image.open(self.yearbook_page.image).convert("RGBA") as background:
+                    dashed_img_draw = DashedImageDraw(background)
 
-                offset = (0, 0)
-                if self.full_resolution:
-                    new_background = background.resize(IMAGE_WITH_BLEED_SIZE)
-                    dashed_img_draw = DashedImageDraw(new_background)
-                    if not self.yearbook_page.page_type.startswith('Static'):
+                    offset = (0, 0)
+                    if self.full_resolution:
+                        new_background = background.resize(IMAGE_WITH_BLEED_SIZE)
+                        dashed_img_draw = DashedImageDraw(new_background)
+                        if not self.yearbook_page.page_type.startswith('Static'):
 
-                        if self.yearbook_page.title is not None and len(self.yearbook_page.title) > 2:
-                            offset = (75, 210)
-                            # Right-hand size page, which will have a title
-                            font_to_use = TITLE_FONT_SELIMA
-                            w, h = font_to_use.getsize(self.yearbook_page.title)
-                            dashed_img_draw.text((int((canvas.size[0] - w) / 2) + 75, 85),
-                                                 self.yearbook_page.title, (255, 255, 255), font=font_to_use)
-                            new_background.paste(canvas, offset, mask=canvas)
-                        else:
-                            offset = (75, 75)
-                            # Left-hand size page, which will have the image starting at 75,75
-                            new_background.paste(canvas, offset, mask=canvas)
-                        # self.draw_publishing_borders(new_background, offset)
-                else:
-                    new_background = canvas
+                            if self.yearbook_page.title is not None and len(self.yearbook_page.title) > 2:
+                                offset = (75, 210)
+                                # Right-hand size page, which will have a title
+                                font_to_use = TITLE_FONT_SELIMA
+                                w, h = font_to_use.getsize(self.yearbook_page.title)
+                                dashed_img_draw.text((int((canvas.size[0] - w) / 2) + 75, 85),
+                                                     self.yearbook_page.title, (255, 255, 255), font=font_to_use)
+                                new_background.paste(canvas, offset, mask=canvas)
+                            else:
+                                offset = (75, 75)
+                                # Left-hand size page, which will have the image starting at 75,75
+                                new_background.paste(canvas, offset, mask=canvas)
+                            # self.draw_publishing_borders(new_background, offset)
+                    else:
+                        new_background = canvas
 
                 if self.page_number_to_print % 2 != 0:
                     y_offset = 75
