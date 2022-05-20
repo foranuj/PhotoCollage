@@ -560,23 +560,18 @@ def stitch_print_ready_cover(pdf_path: str, yearbook: Yearbook, cover_settings: 
 def create_pdf_with_cover_pages(merged_pdf_path: str, front_cover_path: str, interior_pdf_path: str,
                                 back_cover_path: str, blank_pdf_path: str):
 
-    print(merged_pdf_path)
-    print(front_cover_path)
-    print(interior_pdf_path)
-    print(back_cover_path)
-
     from PyPDF2 import PdfFileMerger
     blank_pdf = open(blank_pdf_path, 'rb')
     merger = PdfFileMerger()
     merger.append(open(front_cover_path, 'rb'))
     merger.append(blank_pdf)
     merger.append(open(interior_pdf_path, 'rb'))
-    merger.append(blank_pdf)
     merger.append(open(back_cover_path, 'rb'))
 
     with open(merged_pdf_path, "wb") as fout:
         merger.write(fout)
 
+    del merger
     print("Finished creating merged PDF, here %s " % merged_pdf_path)
 
 
@@ -1562,10 +1557,16 @@ class MainWindow(Gtk.Window):
         merged_pdf_path = os.path.join(dirname, _yearbook.get_file_id() + "_merged.pdf")
         front_cover_path = os.path.join(dirname, _yearbook.get_file_id() + "_front_cover.pdf")
         back_cover_path = os.path.join(dirname, _yearbook.get_file_id() + "_back_cover.pdf")
+
         blank_pdf_path = os.path.join(self.yearbook_parameters['corpus_base_dir'], self.current_yearbook.school,
                                       'Theme', 'blank.pdf')
         create_pdf_with_cover_pages(merged_pdf_path, front_cover_path, self.yearbook_to_file_map[_yearbook.get_id()],
                                     back_cover_path, blank_pdf_path)
+
+        compressed_output_path = os.path.join(dirname, _yearbook.get_file_id() + "_compressed_merged.pdf")
+        compress(merged_pdf_path, compressed_output_path, power=3)
+        if os.path.exists(merged_pdf_path):
+            os.remove(merged_pdf_path)
 
     def upload_printed_pdfs(self, store: Gtk.TreeStore, treepath: Gtk.TreePath, treeiter: Gtk.TreeIter):
         _yearbook: Yearbook = store[treeiter][0]
