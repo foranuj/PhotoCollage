@@ -596,7 +596,7 @@ class MainWindow(Gtk.Window):
         self.output_base_dir = os.path.join('/Users', getpass.getuser(), 'YearbookCreatorOut')
         self.input_base_dir = os.path.join(self.corpus_base_dir, 'YearbookCreatorInput')
         self.yearbook_parameters = {'max_count': 12,
-                                    'db_file_path': os.path.join(self.input_base_dir, 'RY.db'),
+                                    'db_file_path': os.path.join(self.input_base_dir, 'RY_small.db'),
                                     'output_dir': os.path.join(self.output_base_dir, getpass.getuser()),
                                     'corpus_base_dir': self.corpus_base_dir}
 
@@ -1214,7 +1214,6 @@ class MainWindow(Gtk.Window):
                     print(
                         "******We have a parent, let's retrieve from there, %s *****" % len(yearbook_page.parent_pages))
                     for parent_pg in reversed(yearbook_page.parent_pages):
-                        print(parent_pg)
                         print("The parent page was edited:%s?" % parent_pg.is_edited())
                         if parent_pg.is_edited():
                             parent_page = parent_pg
@@ -1229,18 +1228,17 @@ class MainWindow(Gtk.Window):
                 except IndexError:
                     # This is a custom page
                     print("////////////RETRIEVE CUSTOM IMAGES/////////////////////")
-                    child_order_id = self.current_yearbook.orders[0].wix_order_id
-                    custom_order_dir = os.path.join(self.corpus_base_dir, self.current_yearbook.school, 'CustomPhotos',
+                    if len(self.current_yearbook.orders) > 0:
+                        child_order_id = self.current_yearbook.orders[0].wix_order_id
+                        custom_order_dir = os.path.join(self.corpus_base_dir, self.current_yearbook.school, 'CustomPhotos',
                                                     child_order_id)
 
-                    print(custom_order_dir)
-
-                    if os.path.exists(custom_order_dir):
-                        page_images = [os.path.join(custom_order_dir, img) for img in os.listdir(custom_order_dir) if
-                                       img.endswith("jpg") or img.endswith("jpeg") or img.endswith("png")
-                                       or img.endswith('JPG') or img.endswith('PNG')]
+                        if os.path.exists(custom_order_dir):
+                            page_images = [os.path.join(custom_order_dir, img) for img in os.listdir(custom_order_dir) if
+                                           img.endswith("jpg") or img.endswith("jpeg") or img.endswith("png")
+                                           or img.endswith('JPG') or img.endswith('PNG')]
                     else:
-                        page_images = [os.path.join(self.corpus_base_dir, self.current_yearbook.school, "blank.png")]
+                        page_images = [os.path.join(self.corpus_base_dir, self.current_yearbook.school, "Theme", "blank.png")]
 
                     print(len(page_images))
                     try:
