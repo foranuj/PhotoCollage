@@ -344,8 +344,8 @@ class ImagePreviewArea(Gtk.DrawingArea):
                     self.parent.update_tool_buttons()
 
                 # Let's update the flow images to have this image show up in the bottom
-                img_counter = self.parent.update_flow_box_with_images(flow_box, current_page)
-                lbl_ref.set_text(lbl_text + " %s" % img_counter)
+                img_counter, total_count = self.parent.update_flow_box_with_images(flow_box, current_page)
+                lbl_ref.set_text(lbl_text + " %s/%s" % (img_counter, total_count))
 
             elif dist_pinned <= 8 * 8:
                 if cell.photo.filename in current_page.pinned_photos:
@@ -1009,7 +1009,7 @@ class MainWindow(Gtk.Window):
         # Let's only keep the unique images from this list
         candidate_images = get_unique_list_insertion_order(candidate_images)
         candidate_images.sort()
-
+        total_count = len(candidate_images)
         flow_box.set_valign(Gtk.Align.START)
         flow_box.set_max_children_per_line(10)
         flow_box.set_selection_mode(Gtk.SelectionMode.SINGLE)
@@ -1050,7 +1050,7 @@ class MainWindow(Gtk.Window):
                 continue
 
         self.show_all()
-        return counter
+        return counter, total_count
 
     def is_left_page_locked(self):
         return self.current_yearbook.pages[self.prev_page_index].is_locked()
@@ -1062,18 +1062,18 @@ class MainWindow(Gtk.Window):
         print("Updating left page, page index %s " % str(self.curr_page_index))
         print(self.current_yearbook.pages[self.curr_page_index])
         self.update_photolist(self.current_yearbook.pages[self.curr_page_index], [img_name], self.has_title)
-        img_counter = self.update_flow_box_with_images(self.images_flow_box_left,
+        img_counter, total_count = self.update_flow_box_with_images(self.images_flow_box_left,
                                                        self.current_yearbook.pages[self.curr_page_index])
-        self.lbl_left_image_panel.set_text("Left Images : %s " % img_counter)
+        self.lbl_left_image_panel.set_text("Left Images : %s/%s " % (img_counter, total_count))
         self.update_favorites_images()
 
     def add_image_to_right_pane(self, img_name):
         print("Updating right page, page index %s " % str(self.next_page_index))
         print(self.current_yearbook.pages[self.next_page_index])
         self.update_photolist(self.current_yearbook.pages[self.next_page_index], [img_name], self.without_title)
-        img_counter = self.update_flow_box_with_images(self.images_flow_box_right,
+        img_counter, total_count = self.update_flow_box_with_images(self.images_flow_box_right,
                                                        self.current_yearbook.pages[self.next_page_index])
-        self.lbl_right_image_panel.set_text("Right Images : %s " % img_counter)
+        self.lbl_right_image_panel.set_text("Right Images : %s/%s " % (img_counter, total_count))
         self.update_favorites_images()
 
     def invoke_add_image(self, widget, event, img_name, images_list):
@@ -1134,7 +1134,8 @@ class MainWindow(Gtk.Window):
             if files[i].startswith("file://"):
                 files[i] = urllib.parse.unquote(files[i][7:])
         self.update_photolist(self.current_yearbook.pages[self.curr_page_index], files)
-        self.update_flow_box_with_images(self.images_flow_box_left, self.current_yearbook.pages[self.curr_page_index])
+        img_counter, total_count = self.update_flow_box_with_images(self.images_flow_box_left, self.current_yearbook.pages[self.curr_page_index])
+        self.lbl_left_image_panel.set_text("Left Images %s/%s" % (img_counter, total_count))
 
     def render_and_save_yearbook(self, store: Gtk.TreeStore, treepath: Gtk.TreePath, treeiter: Gtk.TreeIter):
         _yearbook = store[treeiter][0]
@@ -1832,10 +1833,10 @@ class MainWindow(Gtk.Window):
         right_page = self.current_yearbook.pages[self.next_page_index]
         self.render_right_page(right_page)
 
-        left_counter = self.update_flow_box_with_images(self.images_flow_box_left, left_page)
-        self.lbl_left_image_panel.set_text("Left Images: %s" % left_counter)
-        right_counter = self.update_flow_box_with_images(self.images_flow_box_right, right_page)
-        self.lbl_right_image_panel.set_text("Right Images: %s" % right_counter)
+        left_counter, total_count = self.update_flow_box_with_images(self.images_flow_box_left, left_page)
+        self.lbl_left_image_panel.set_text("Left Images: %s/%s" % (left_counter, total_count))
+        right_counter, total_count = self.update_flow_box_with_images(self.images_flow_box_right, right_page)
+        self.lbl_right_image_panel.set_text("Right Images: %s/%s" % (right_counter, total_count))
 
         self.update_favorites_images()
         self.update_label_text()
