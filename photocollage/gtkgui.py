@@ -108,10 +108,19 @@ def gtk_run_in_main_thread(fn):
     return my_fn
 
 
+def load_favorites_images() -> set():
+    return None
+
+
 def load_favorites_pickle(favorite_pickle_path: str) -> set():
     pick_file = os.path.join(favorite_pickle_path, "favorite.pickle")
     if not os.path.exists(pick_file):
-        return set()
+        # Check for images in the directory
+        images = [os.path.join(favorite_pickle_path, img) for img in os.listdir(favorite_pickle_path)
+                  if img.endswith("png") or img.endswith("jpg") or img.endswith("jpeg")]
+
+        print("There are a bunch of files in the favorites folder %s " % len(images))
+        return set(images)
 
     import pickle
     favorites_pickle = open(pick_file, "rb")
@@ -559,7 +568,6 @@ def stitch_print_ready_cover(pdf_path: str, yearbook: Yearbook, cover_settings: 
 
 def create_pdf_with_cover_pages(merged_pdf_path: str, front_cover_path: str, interior_pdf_path: str,
                                 back_cover_path: str, blank_pdf_path: str):
-
     from PyPDF2 import PdfFileMerger
     blank_pdf = open(blank_pdf_path, 'rb')
     merger = PdfFileMerger()
@@ -1063,7 +1071,7 @@ class MainWindow(Gtk.Window):
         print(self.current_yearbook.pages[self.curr_page_index])
         self.update_photolist(self.current_yearbook.pages[self.curr_page_index], [img_name], self.has_title)
         img_counter, total_count = self.update_flow_box_with_images(self.images_flow_box_left,
-                                                       self.current_yearbook.pages[self.curr_page_index])
+                                                                    self.current_yearbook.pages[self.curr_page_index])
         self.lbl_left_image_panel.set_text("Left Images : %s/%s " % (img_counter, total_count))
         self.update_favorites_images()
 
@@ -1072,7 +1080,7 @@ class MainWindow(Gtk.Window):
         print(self.current_yearbook.pages[self.next_page_index])
         self.update_photolist(self.current_yearbook.pages[self.next_page_index], [img_name], self.without_title)
         img_counter, total_count = self.update_flow_box_with_images(self.images_flow_box_right,
-                                                       self.current_yearbook.pages[self.next_page_index])
+                                                                    self.current_yearbook.pages[self.next_page_index])
         self.lbl_right_image_panel.set_text("Right Images : %s/%s " % (img_counter, total_count))
         self.update_favorites_images()
 
@@ -1134,7 +1142,8 @@ class MainWindow(Gtk.Window):
             if files[i].startswith("file://"):
                 files[i] = urllib.parse.unquote(files[i][7:])
         self.update_photolist(self.current_yearbook.pages[self.curr_page_index], files)
-        img_counter, total_count = self.update_flow_box_with_images(self.images_flow_box_left, self.current_yearbook.pages[self.curr_page_index])
+        img_counter, total_count = self.update_flow_box_with_images(self.images_flow_box_left,
+                                                                    self.current_yearbook.pages[self.curr_page_index])
         self.lbl_left_image_panel.set_text("Left Images %s/%s" % (img_counter, total_count))
 
     def render_and_save_yearbook(self, store: Gtk.TreeStore, treepath: Gtk.TreePath, treeiter: Gtk.TreeIter):
@@ -1231,15 +1240,18 @@ class MainWindow(Gtk.Window):
                     print("////////////RETRIEVE CUSTOM IMAGES/////////////////////")
                     if len(self.current_yearbook.orders) > 0:
                         child_order_id = self.current_yearbook.orders[0].wix_order_id
-                        custom_order_dir = os.path.join(self.corpus_base_dir, self.current_yearbook.school, 'CustomPhotos',
-                                                    child_order_id)
+                        custom_order_dir = os.path.join(self.corpus_base_dir, self.current_yearbook.school,
+                                                        'CustomPhotos',
+                                                        child_order_id)
 
                         if os.path.exists(custom_order_dir):
-                            page_images = [os.path.join(custom_order_dir, img) for img in os.listdir(custom_order_dir) if
+                            page_images = [os.path.join(custom_order_dir, img) for img in os.listdir(custom_order_dir)
+                                           if
                                            img.endswith("jpg") or img.endswith("jpeg") or img.endswith("png")
                                            or img.endswith('JPG') or img.endswith('PNG')]
                     else:
-                        page_images = [os.path.join(self.corpus_base_dir, self.current_yearbook.school, "Theme", "blank.png")]
+                        page_images = [
+                            os.path.join(self.corpus_base_dir, self.current_yearbook.school, "Theme", "blank.png")]
 
                     print(len(page_images))
                     try:
