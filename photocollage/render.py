@@ -40,6 +40,7 @@ TITLE_FONT_OPEN_SANS = ImageFont.truetype(os.path.join(FONT_DIR, "open-sans/Open
 TEXT_FONT_SMALL = ImageFont.truetype(os.path.join(FONT_DIR, "open-sans/OpenSans-Bold.ttf"), 50)
 TITLE_FONT_MOHAVE = ImageFont.truetype(os.path.join(FONT_DIR, "Mohave/Mohave-SemiBold.ttf"), 100)
 TITLE_FONT_SELIMA = ImageFont.truetype(os.path.join(FONT_DIR, "selima/selima_.otf"), 135)
+TITLE_FONT_ECZAR = ImageFont.truetype(os.path.join(FONT_DIR, "Eczar", "static", "Eczar-SemiBold.ttf"), 125)
 # Try to continue even if the input file is corrupted.
 # See issue at https://github.com/adrienverge/PhotoCollage/issues/65
 PIL.ImageFile.LOAD_TRUNCATED_IMAGES = True
@@ -370,12 +371,12 @@ class RenderingTask(Thread):
                         dashed_img_draw = DashedImageDraw(new_background)
                         if not self.yearbook_page.page_type.startswith('Static'):
                             if title is not None and len(title) > 2:
-                                offset = (75, 210)
+                                offset = (75, 200)
                                 # Right-hand size page, which will have a title
-                                font_to_use = TITLE_FONT_SELIMA
+                                font_to_use = TITLE_FONT_ECZAR
                                 w, h = font_to_use.getsize(title)
-                                dashed_img_draw.text((int((canvas.size[0] - w) / 2) + 75, 85),
-                                                     title, (255, 255, 255), font=font_to_use)
+                                dashed_img_draw.text((int((canvas.size[0] - w) / 2) + 200, 55),
+                                                     title, font=font_to_use, fill='#Dc3e37')
                                 new_background.paste(canvas, offset, mask=canvas)
                             else:
                                 offset = (75, 75)
