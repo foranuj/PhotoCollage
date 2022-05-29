@@ -48,7 +48,8 @@ from publish.lulu import create_order_payload, get_header, client_id, client_sec
 
 from util.google.drive.util import get_url_from_file_id, upload_with_item_check, get_file_id_from_url
 from util.utils import get_unique_list_insertion_order
-from yearbook.Yearbook import Yearbook, get_tag_list_for_page, pickle_yearbook, create_yearbook_from_pickle
+from yearbook.Yearbook import Yearbook, get_tag_list_for_page, pickle_yearbook, create_yearbook_from_pickle, \
+    get_pages_for_school
 from yearbook.Yearbook import Page
 
 from images.utils import get_orientation_fixed_pixbuf
@@ -626,6 +627,9 @@ class MainWindow(Gtk.Window):
 
         self.school_combo.set_active(0)
         self.school_name = self.school_combo.get_active_text()
+
+        self.pages_map = get_pages_for_school(self.yearbook_parameters, self.school_name)
+
         self.set_current_corpus()
         self.curr_page_index = 0
 
@@ -669,7 +673,6 @@ class MainWindow(Gtk.Window):
         self.treeView = Gtk.TreeView(self.treeModel)
         tv_column = Gtk.TreeViewColumn('Roster')
         self.treeView.append_column(tv_column)
-        # self.treeView.expand_all()
 
         self.school_combo.connect("changed", self.on_school_combo_changed)
 
@@ -1354,7 +1357,8 @@ class MainWindow(Gtk.Window):
             on_update=gtk_run_in_main_thread(on_update),
             on_complete=gtk_run_in_main_thread(on_complete),
             on_fail=gtk_run_in_main_thread(on_fail),
-            page_number_to_print=0)
+            page_number_to_print=0,
+            pages_map=self.pages_map)
         t.start()
 
         response = comp_dialog.run()
@@ -1449,7 +1453,8 @@ class MainWindow(Gtk.Window):
                 on_complete=gtk_run_in_main_thread(on_complete),
                 on_fail=gtk_run_in_main_thread(on_fail),
                 stitch_background=True,
-                page_number_to_print=page_counter)
+                page_number_to_print=page_counter,
+                pages_map=self.pages_map)
             t.start()
             page_counter = page_counter + 1
             response = compdialog.run()

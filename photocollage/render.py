@@ -148,7 +148,8 @@ class RenderingTask(Thread):
 
     def __init__(self, yearbook_page: Page, page, border_width=0.01, border_color=(0, 0, 0),
                  quality=QUALITY_BEST, output_file=None,
-                 on_update=None, on_complete=None, on_fail=None, stitch_background=None, page_number_to_print=None):
+                 on_update=None, on_complete=None, on_fail=None, stitch_background=None,
+                 page_number_to_print=None, pages_map={}):
         super().__init__()
 
         self.yearbook_page = yearbook_page
@@ -166,6 +167,7 @@ class RenderingTask(Thread):
         self.canceled = False
         self.full_resolution = stitch_background
         self.page_number_to_print = page_number_to_print
+        self.pages_map = pages_map
 
     def abort(self):
         self.canceled = True
@@ -357,7 +359,9 @@ class RenderingTask(Thread):
 
             if self.output_file:
                 print("Saving image at ...", self.output_file)
-                with PIL.Image.open(self.yearbook_page.image).convert("RGBA") as background:
+                back_img = self.pages_map[self.yearbook_page.get_id()].image
+                title = self.pages_map[self.yearbook_page.get_id()].title
+                with PIL.Image.open(back_img).convert("RGBA") as background:
                     dashed_img_draw = DashedImageDraw(background)
 
                     offset = (0, 0)
@@ -365,14 +369,13 @@ class RenderingTask(Thread):
                         new_background = background.resize(IMAGE_WITH_BLEED_SIZE)
                         dashed_img_draw = DashedImageDraw(new_background)
                         if not self.yearbook_page.page_type.startswith('Static'):
-
-                            if self.yearbook_page.title is not None and len(self.yearbook_page.title) > 2:
+                            if title is not None and len(title) > 2:
                                 offset = (75, 210)
                                 # Right-hand size page, which will have a title
                                 font_to_use = TITLE_FONT_SELIMA
-                                w, h = font_to_use.getsize(self.yearbook_page.title)
+                                w, h = font_to_use.getsize(title)
                                 dashed_img_draw.text((int((canvas.size[0] - w) / 2) + 75, 85),
-                                                     self.yearbook_page.title, (255, 255, 255), font=font_to_use)
+                                                     title, (255, 255, 255), font=font_to_use)
                                 new_background.paste(canvas, offset, mask=canvas)
                             else:
                                 offset = (75, 75)
