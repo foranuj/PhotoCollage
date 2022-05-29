@@ -33,18 +33,19 @@ from gi.repository.Gtk import TreeStore
 from data.model.ModelCreator import get_tree_model
 from data.pickle.utils import get_pickle_path, get_jpg_path
 from data.rankers import RankerFactory
-from data.sqllite.reader import get_order_details_for_child, get_desired_name, create_connection
+from data.sqllite.reader import create_connection
 from images.ImageWindow import ImageWindow
 from pdf_utils.pdf_compressor import compress
 from photocollage import APP_NAME, artwork, collage, render
 from photocollage.collage import Photo
-from photocollage.render import PIL_SUPPORTED_EXTS as EXTS, TITLE_FONT_MOHAVE, TITLE_FONT_SELIMA, TITLE_FONT_ECZAR
+from photocollage.render import PIL_SUPPORTED_EXTS as EXTS
 from photocollage.dialogs.SettingsDialog import SettingsDialog
 
 from data.readers.default import corpus_processor
+from photocollage.settings.PrintSettings import Options
 from publish.OrderDetails import OrderDetails
 from publish.cover.CoverCreatorFactory import get_cover_settings, CoverSettings
-from publish.lulu import create_order_payload, get_header, client_id, client_secret, lulu_api_url
+from publish.lulu import create_order_payload
 
 from util.google.drive.util import get_url_from_file_id, upload_with_item_check, get_file_id_from_url
 from util.utils import get_unique_list_insertion_order
@@ -449,21 +450,6 @@ def get_yearbook_string(column, cell, model, iter, data):
     cell.set_property('text', model.get_value(iter, 0).__repr__())
 
 
-class Options:
-    def __init__(self, has_title: bool = True):
-        self.border_w = 0.01
-        self.border_c = "black"
-        # Dimensions for Book trim size, US Letter, 8.5 x 11 inches at 300 ppi
-        # Making the width the same, and height of right page is smaller than left by 100 pixels
-        # for adding the label
-        if not has_title:
-            self.out_h = 3225
-        else:
-            _, h = TITLE_FONT_ECZAR.getsize("A")
-            self.out_h = 3225 - h
-        self.out_w = 2475
-
-
 def create_pdf_from_images(pdf_path, images):
     canvas = Canvas(pdf_path, pagesize=(8.75 * inch, 11.25 * inch))
 
@@ -682,7 +668,7 @@ class MainWindow(Gtk.Window):
         tv_column.add_attribute(cell, 'text', 0)
 
         self.has_title = Options(has_title=True)
-        self.without_title = Options(has_title=False)
+        self.without_title = self.has_title
 
         self.deleted_images = set()
         self.favorite_images = set()
@@ -1820,7 +1806,7 @@ class MainWindow(Gtk.Window):
 
     def pickle_all_books(self, button):
         print("Will be pickling all books")
-        self.treeModel.foreach(self.render_and_save_yearbook)
+        self.treeModel.foreach(self.pickle_book)
 
     def select_next_page(self, button):
         # Increment to the next left page

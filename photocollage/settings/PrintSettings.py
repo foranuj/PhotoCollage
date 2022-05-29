@@ -1,14 +1,18 @@
-from PIL import ImageFont
-import os, getpass
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
+from fonts.FontSettings import TITLE_FONT_ECZAR
 
 IMAGE_WITH_BLEED_SIZE = (2625, 3375)
 
-FONT_FOLDER = os.path.join('/Users', getpass.getuser(), 'GoogleDrive', 'Fonts')
 
-TEXT_FONT = ImageFont.truetype(os.path.join(FONT_FOLDER, "open-sans", "OpenSans-Bold.ttf"), 100)
-SIGNIKA_TEXT_FONT = ImageFont.truetype(os.path.join(FONT_FOLDER, "Signika", "Signika-Bold.ttf"), 100)
-
-pdfmetrics.registerFont(TTFont('Signika', 'Signika-Bold.ttf'))
-
+class Options:
+    def __init__(self, has_title: bool = True):
+        self.border_w = 0.01
+        self.border_c = "black"
+        # Dimensions for Book trim size, US Letter, 8.5 x 11 inches at 300 ppi
+        # Making the width the same, and height of right page is smaller than left by 100 pixels
+        # for adding the label
+        if not has_title:
+            self.out_h = 3225
+        else:
+            _, h = TITLE_FONT_ECZAR.getsize("A")
+            self.out_h = 3225 - h
+        self.out_w = 2475

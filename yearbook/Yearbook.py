@@ -276,6 +276,8 @@ def pickle_yearbook(_yearbook: Yearbook, stub_dir: str):
         if page.title.startswith("Vargas"):
             page.title = "Spirit Days"
 
+
+
     # Important to open the file in binary mode
     with open(pickle_filename, 'wb') as f:
         pickle.dump(_yearbook.pickle_yearbook, f)
