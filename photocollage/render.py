@@ -23,24 +23,16 @@ import PIL.ImageDraw
 import PIL.ImageFile
 from PIL import ImageOps, ImageFont
 
+from fonts.FontSettings import TITLE_FONT_ECZAR, TEXT_FONT_SMALL
 from photocollage.collage import Photo
-from photocollage.settings.PrintSettings import IMAGE_WITH_BLEED_SIZE
+from photocollage.settings.PrintSettings import IMAGE_WITH_BLEED_SIZE, Options
 from util.draw.DashedImageDraw import DashedImageDraw
 from yearbook.page import Page
-
-import os, getpass
 
 QUALITY_SKEL = 0
 QUALITY_FAST = 1
 QUALITY_BEST = 2
-# Hard Coded Size value of 8.75 by 11.25 inches
-IMAGE_WITH_BLEED_SIZE = (2625, 3375)
-FONT_DIR = os.path.join("/Users", getpass.getuser(), "GoogleDrive", "Fonts")
-TITLE_FONT_OPEN_SANS = ImageFont.truetype(os.path.join(FONT_DIR, "open-sans/OpenSans-Bold.ttf"), 100)
-TEXT_FONT_SMALL = ImageFont.truetype(os.path.join(FONT_DIR, "open-sans/OpenSans-Bold.ttf"), 50)
-TITLE_FONT_MOHAVE = ImageFont.truetype(os.path.join(FONT_DIR, "Mohave/Mohave-SemiBold.ttf"), 100)
-TITLE_FONT_SELIMA = ImageFont.truetype(os.path.join(FONT_DIR, "selima/selima_.otf"), 135)
-TITLE_FONT_ECZAR = ImageFont.truetype(os.path.join(FONT_DIR, "Eczar", "static", "Eczar-SemiBold.ttf"), 125)
+
 # Try to continue even if the input file is corrupted.
 # See issue at https://github.com/adrienverge/PhotoCollage/issues/65
 PIL.ImageFile.LOAD_TRUNCATED_IMAGES = True
@@ -169,6 +161,7 @@ class RenderingTask(Thread):
         self.full_resolution = stitch_background
         self.page_number_to_print = page_number_to_print
         self.pages_map = pages_map
+        self.dimensions = Options()
 
     def abort(self):
         self.canceled = True
@@ -319,6 +312,7 @@ class RenderingTask(Thread):
         try:
             canvas = PIL.Image.new(
                 "RGBA", (int(self.page.w), int(self.page.h)), "black")
+            # "RGBA", (int(self.dimensions.out_w), int(self.dimensions.out_h)), "black")
 
             self.draw_skeleton(canvas)
             self.draw_borders(canvas)
@@ -364,20 +358,19 @@ class RenderingTask(Thread):
                 title = self.pages_map[self.yearbook_page.get_id()].title
                 with PIL.Image.open(back_img).convert("RGBA") as background:
                     dashed_img_draw = DashedImageDraw(background)
-
-                    offset = (0, 0)
                     if self.full_resolution:
                         new_background = background.resize(IMAGE_WITH_BLEED_SIZE)
                         dashed_img_draw = DashedImageDraw(new_background)
                         if not self.yearbook_page.page_type.startswith('Static'):
                             if title is not None and len(title) > 2:
-                                offset = (75, 200)
+                                offset = (75, 180)
                                 # Right-hand size page, which will have a title
                                 font_to_use = TITLE_FONT_ECZAR
                                 w, h = font_to_use.getsize(title)
-                                dashed_img_draw.text((int((canvas.size[0] - w) / 2) + 200, 55),
+                                dashed_img_draw.text((int((canvas.size[0] - w) / 2) + offset[0], 75),
                                                      title, font=font_to_use, fill='#Dc3e37')
-                                new_background.paste(canvas, offset, mask=canvas)
+                                resized_canvas = canvas.resize((self.dimensions.out_w, self.dimensions.out_h))
+                                new_background.paste(resized_canvas, offset, mask=resized_canvas)
                             else:
                                 offset = (75, 75)
                                 # Left-hand size page, which will have the image starting at 75,75
