@@ -2,7 +2,7 @@ from sqlite3 import Cursor
 from typing import Optional, List
 
 from data.pickle.utils import get_pickle_path
-from data.sqllite.reader import get_child_orders
+from data.sqllite.reader import get_child_orders, create_connection
 from publish.OrderDetails import OrderDetails
 from yearbook.page.Page import Page
 from gi.repository import GObject
@@ -70,6 +70,26 @@ def create_yearbook_from_pickle(pickle_file_path, parent_book):
             page.parent_pages.reverse()
 
     return Yearbook(pickle_yearbook=yearbook)
+
+
+def get_pages_for_school(dir_params: {}, school_name: str):
+    import os
+
+    db_file = dir_params['db_file_path']
+    corpus_base_dir = dir_params['corpus_base_dir']
+    pages_map = {}
+    with create_connection(db_file) as conn:
+        cur = conn.cursor()
+        query = 'Select a.title, a.name, a.type, a.page_number, a.image, a.tags from pages a, schools s ' \
+                'where a.album = s.[Album Id] and s.name = "%s" ' % school_name
+        rows = cur.execute(query)
+        for row in rows:
+            orig_img_loc = os.path.join(corpus_base_dir, school_name, row[4])
+            page = Page(number=int(row[3]), event=str(row[1]).strip(), page_type=row[2],
+                        orig_image_loc=orig_img_loc, title=str(row[0]), tags=str(row[5]))
+            pages_map[page.get_id()] = page
+
+    return pages_map
 
 
 def create_yearbook_from_db(dir_params: {}, school_name: str, classroom: str, child: str, parent_book=None):
