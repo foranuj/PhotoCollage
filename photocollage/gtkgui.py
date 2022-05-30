@@ -625,6 +625,7 @@ class MainWindow(Gtk.Window):
         self.images_flow_box_left = Gtk.FlowBox()
         self.images_flow_box_right = Gtk.FlowBox()
         self.portraits_flow_box = Gtk.FlowBox()
+        self.child_images_flow_box = Gtk.FlowBox()
         self.btn_settings = Gtk.Button()
         self.btn_clear_left = Gtk.Button(label="ClearLeft")
         self.btn_regen_left = Gtk.Button(label=_("RegenerateLeft"))
@@ -648,7 +649,7 @@ class MainWindow(Gtk.Window):
         self.btn_pin_page_right = Gtk.ToggleButton(label="Pin Page Right")
         self.lbl_left_image_panel = Gtk.Label(label="Left Images")
         self.lbl_right_image_panel = Gtk.Label(label="Right Images")
-
+        self.lbl_child_image_panel = Gtk.Label(label="Child Images")
         self.btn_print_all_books = Gtk.Button(label=_("Print All@Lulu"))
         self.btn_submit_order = Gtk.Button(label=_("ORDER"))
         self.db_connection = create_connection(self.yearbook_parameters['db_file_path'])
@@ -834,6 +835,13 @@ class MainWindow(Gtk.Window):
         page3.set_border_width(50)
         notebook.append_page(_scrolledWindow, self.lbl_right_image_panel)
 
+        _scrolledWindow = Gtk.ScrolledWindow()
+        _scrolledWindow.set_size_request(600, 300)
+        _scrolledWindow.add(self.child_images_flow_box)
+        page4 = Gtk.Box()
+        page4.set_border_width(50)
+        notebook.append_page(_scrolledWindow, self.lbl_child_image_panel)
+
         notebook.set_show_tabs(True)
         notebook.show()
 
@@ -889,6 +897,7 @@ class MainWindow(Gtk.Window):
         self.set_current_corpus()
         self.update_ui_elements()
         self.update_child_portrait_images(self.current_yearbook)
+        self.update_child_images_panel(self.current_yearbook)
         self.update_deleted_images()
 
     def get_child_portrait_images(self, yearbook: Yearbook):
@@ -950,6 +959,36 @@ class MainWindow(Gtk.Window):
 
         self.show_all()
 
+    def update_child_images_panel(self, yearbook: Yearbook):
+        flowbox = self.child_images_flow_box
+
+        flowbox.set_valign(Gtk.Align.START)
+        flowbox.set_max_children_per_line(10)
+        flowbox.set_selection_mode(Gtk.SelectionMode.SINGLE)
+
+        # Need to remove all previously added images
+        [flowbox.remove(child) for child in flowbox.get_children()]
+
+        if yearbook.child is not None:
+            print("Looking for pictures of %s" % yearbook.child)
+            child_portraits = self.get_child_portrait_images(yearbook)
+            for img in child_portraits:
+                if img.endswith("jpg") or img.endswith("png") or img.endswith("PNG") or img.endswith(
+                        "jpeg") or img.endswith("JPG"):
+                    try:
+                        pixbuf = get_orientation_fixed_pixbuf(img)
+                        image = Gtk.Image.new_from_pixbuf(pixbuf)
+                        img_box = Gtk.EventBox()
+                        img_box.add(image)
+                        img_box.connect("button_press_event", self.invoke_add_image, img, child_portraits)
+                        flowbox.add(img_box)
+                    except OSError:
+                        # raise BadPhoto(name)
+                        print("Skipping a selfie: %s" % img)
+                        continue
+
+        self.show_all()
+
     def update_child_portrait_images(self, yearbook: Yearbook):
         flowbox = self.portraits_flow_box
         flowbox.set_valign(Gtk.Align.START)
@@ -958,7 +997,7 @@ class MainWindow(Gtk.Window):
         [flowbox.remove(child) for child in flowbox.get_children()]
 
         if yearbook.child is not None:
-            print("Looking for pictures of %s" % yearbook.child)
+            print("Looking for selfies of %s" % yearbook.child)
             child_portraits = self.get_child_portrait_images(yearbook)
 
             for img in child_portraits:
