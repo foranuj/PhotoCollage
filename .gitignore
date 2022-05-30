@@ -5,6 +5,7 @@ build
 YearbookCreator.iml
 .idea/misc.xml
 .idea/misc.xml
+git.token
 api_key
 .idea/inspectionProfiles/Project_Default.xml
 .DS_Store
