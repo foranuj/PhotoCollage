@@ -20,13 +20,13 @@ class TestReader(unittest.TestCase):
         self.output_base_dir = os.path.join('/Users', getpass.getuser(), 'YearbookCreatorOut')
         self.input_base_dir = os.path.join('/Users', getpass.getuser(), 'GoogleDrive', 'YearbookCreatorInput')
         self.yearbook_parameters = {'max_count': 12,
-                                    'db_file_path': os.path.join(self.input_base_dir, 'RY.db'),
+                                    'db_file_path': os.path.join(self.input_base_dir, 'RY_Monticello.db'),
                                     'output_dir': os.path.join(self.output_base_dir, getpass.getuser()),
                                     'corpus_base_dir': os.path.join('/Users', getpass.getuser(), 'GoogleDrive',
                                                                     school_name)}
 
     def test_get_order_details_for_child(self):
-        orders = get_order_details_for_child("Shannon Gordon")
+        orders = get_order_details_for_child(create_connection(self.yearbook_parameters['db_file_path']), "Aarish Mathur")
 
         print("Printing orders for Shannon")
         [print(order) for order in orders]
@@ -41,7 +41,7 @@ class TestReader(unittest.TestCase):
     def test_get_order_details_for_child(self):
         # Srivardhan Srinivasan
         order_details: Optional[List[(str, str)]] = get_child_orders(self.yearbook_parameters['db_file_path'],
-                                                                     child_name='Shannon Gordon')
+                                                                     child_name='Aarish Mathur')
 
         print(order_details)
 

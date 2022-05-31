@@ -1,7 +1,8 @@
 class OrderDetails:
-    def __init__(self, wix_order_id: str, cover_format: str):
+    def __init__(self, wix_order_id: str, cover_format: str, student_id: str):
         self.wix_order_id = wix_order_id
         self.cover_format = cover_format
+        self.student_id = student_id
         self.interior_pdf_url = None
         self.cover_url = None
         self.lulu_job_id: str = None

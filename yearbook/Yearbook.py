@@ -31,11 +31,11 @@ def create_yearbook(dir_params: {}, school_name: str, classroom: str, child: str
         print("Updating orders to find the latest today...")
         if _yearbook.child is not None:
             print("Getting orders for %s " % _yearbook.child)
-            child_orders: Optional[List[(str, str)]] = get_child_orders(dir_params["db_file_path"], _yearbook.child)
+            child_orders: Optional[List[(str, str, str)]] = get_child_orders(dir_params["db_file_path"], _yearbook.child)
             # We need at least 1 order
             print("Will update the orders... ")
             print(child_orders)
-            _yearbook.pickle_yearbook.orders = [OrderDetails(wix_order_id=order[1], cover_format=order[0]) for order in child_orders]
+            _yearbook.pickle_yearbook.orders = [OrderDetails(wix_order_id=order[1], cover_format=order[0], student_id=order[2]) for order in child_orders]
 
         if len(_yearbook.orders) == 0 and _yearbook.child is not None:
             print("SKIPPING YEARBOOK AS IT HAS NO ORDERS")
@@ -44,7 +44,7 @@ def create_yearbook(dir_params: {}, school_name: str, classroom: str, child: str
         return _yearbook
     else:
         # Create the yearbook from DB
-        print("*********First creation of this yearbook********")
+        print("*********First creation of this yearbook %s %s ********" % (classroom, child))
         return create_yearbook_from_db(dir_params, school_name, classroom, child, parent_book)
 
 
@@ -104,7 +104,7 @@ def create_yearbook_from_db(dir_params: {}, school_name: str, classroom: str, ch
         child_orders: Optional[List[(str, str)]] = get_child_orders(db_file_path, child)
         # We need at least 1 order
         if len(child_orders) > 0:
-            orders = [OrderDetails(wix_order_id=order[1], cover_format=order[0]) for order in child_orders]
+            orders = [OrderDetails(wix_order_id=order[1], cover_format=order[0], student_id=order[2]) for order in child_orders]
         else:
             return None
 
@@ -119,8 +119,8 @@ def create_yearbook_from_db(dir_params: {}, school_name: str, classroom: str, ch
                 continue
             else:
                 # The number of images in the folder should be greater than two
-                child_order_id = orders[0].wix_order_id
-                custom_order_dir = os.path.join(corpus_base_dir, school_name, 'CustomPhotos', child_order_id)
+                child_student_id = orders[0].student_id
+                custom_order_dir = os.path.join(corpus_base_dir, school_name, 'CustomPhotos', child_student_id)
                 print(custom_order_dir)
                 if os.path.exists(custom_order_dir):
                     if len(os.listdir(custom_order_dir)) < 2:
@@ -138,7 +138,7 @@ def create_yearbook_from_db(dir_params: {}, school_name: str, classroom: str, ch
             current_parent = parent_book
             counter = 0
             parent_page_dict = {parent_page.number: parent_page for parent_page in current_parent.pages}
-
+            print("Looking for parent for page %s %s " % (page.number, page.event_name))
             while current_parent is not None and not page.is_optional:
                 # Add the same index page from the parent
                 page_from_parent = parent_page_dict[page.number]

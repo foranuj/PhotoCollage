@@ -52,7 +52,7 @@ def get_order_details_for_child(conn, child_name: str, school_id: str = None):
         orders = []
         # Note: We have only 1 entry in the database for this child, or none 
         for row in cursor:
-            orders.append((str(row[0]), str(row[1])))
+            orders.append((str(row[0]), str(row[1]), str(row[2])))
     except:
         orders = None
 
