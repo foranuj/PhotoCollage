@@ -1336,8 +1336,6 @@ class MainWindow(Gtk.Window):
         yearbook_page.photo_list = page_collage.photolist
         yearbook_page.history.append(page_collage)
 
-        print("YEARBOOK PAGE IMAGES")
-        [print(img.filename) for img in yearbook_page.photo_list]
         # If the desired ratio changed in the meantime (e.g. from landscape to
         # portrait), it needs to be re-updated
         page_collage.page.target_ratio = 1.0 * options.out_h / options.out_w
