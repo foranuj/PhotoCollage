@@ -591,7 +591,7 @@ class MainWindow(Gtk.Window):
         self.output_base_dir = os.path.join('/Users', getpass.getuser(), 'YearbookCreatorOut')
         self.input_base_dir = os.path.join(self.corpus_base_dir, 'YearbookCreatorInput')
         self.yearbook_parameters = {'max_count': 12,
-                                    'db_file_path': os.path.join(self.input_base_dir, 'RY_small.db'),
+                                    'db_file_path': os.path.join(self.input_base_dir, 'RY_Monticello.db'),
                                     'output_dir': os.path.join(self.output_base_dir, getpass.getuser()),
                                     'corpus_base_dir': self.corpus_base_dir}
 
@@ -1281,7 +1281,6 @@ class MainWindow(Gtk.Window):
                         page_images = [
                             os.path.join(self.corpus_base_dir, self.current_yearbook.school, "Theme", "blank.png")]
 
-                    print(len(page_images))
                     try:
                         page_collage: UserCollage = yearbook_page.history[-1]
                     except IndexError:
@@ -1845,7 +1844,7 @@ class MainWindow(Gtk.Window):
 
     def pickle_all_books(self, button):
         print("Will be pickling all books")
-        self.treeModel.foreach(self.pickle_book)
+        self.treeModel.foreach(self.render_and_pickle_yearbook)
 
     def select_next_page(self, button):
         # Increment to the next left page
