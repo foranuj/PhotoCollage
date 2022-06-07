@@ -712,8 +712,8 @@ class MainWindow(Gtk.Window):
         self.btn_next_page = Gtk.Button(label=_("Next page..."))
         self.btn_save_book = Gtk.Button(label=_("Save"))
         self.btn_save_all_books = Gtk.Button(label=_("Save All"))
-        self.btn_lock_page_left = Gtk.ToggleButton(label=_("Lock Left"))
-        self.btn_lock_page_right = Gtk.ToggleButton(label=_("Lock Right"))
+        self.btn_edit_page_left = Gtk.ToggleButton(label=_("Edit Left"))
+        self.btn_edit_page_right = Gtk.ToggleButton(label=_("Edit Right"))
         self.btn_pin_page_left = Gtk.ToggleButton(label="Pin Page Left")
         self.btn_pin_page_right = Gtk.ToggleButton(label="Pin Page Right")
         self.lbl_left_image_panel = Gtk.Label(label="Left Images")
@@ -811,11 +811,11 @@ class MainWindow(Gtk.Window):
         box.pack_start(self.btn_pin_page_right, True, True, 0)
         self.btn_pin_page_right.connect("clicked", self.pin_page_right)
 
-        box.pack_start(self.btn_lock_page_left, True, True, 0)
-        self.btn_lock_page_left.connect("clicked", self.lock_page_left)
+        box.pack_start(self.btn_edit_page_left, True, True, 0)
+        self.btn_edit_page_left.connect("clicked", self.edit_page_left)
 
-        box.pack_start(self.btn_lock_page_right, True, True, 0)
-        self.btn_lock_page_right.connect("clicked", self.lock_page_right)
+        box.pack_start(self.btn_edit_page_right, True, True, 0)
+        self.btn_edit_page_right.connect("clicked", self.edit_page_right)
 
         box.pack_start(self.btn_save_book, True, True, 0)
         self.btn_save_book.connect("clicked", self.save_book)
@@ -1092,8 +1092,6 @@ class MainWindow(Gtk.Window):
 
     def update_flow_box_with_images(self, flow_box, page: Page):
 
-        print("Update flow with images ")
-        print(page.page_type)
         if not page.personalized:
             if page.is_optional:
                 child_order_id = self.current_yearbook.orders[0].student_id
@@ -1101,16 +1099,13 @@ class MainWindow(Gtk.Window):
                                                 'CustomPhotos',
                                                 child_order_id)
 
-                print(custom_order_dir)
                 if os.path.exists(custom_order_dir):
                     candidate_images = [os.path.join(custom_order_dir, img) for img in os.listdir(custom_order_dir)
                                    if
                                    img.endswith("jpg") or img.endswith("jpeg") or img.endswith("png")
                                    or img.endswith('JPG') or img.endswith('PNG')]
-                    print("updating flow box :: -> length of custom images %s " % len(candidate_images))
 
             else:
-                print("Load image as is, %s, %s" % (page.event_name, page.image))
                 candidate_images = [page.image]
         else:
             key = self.current_yearbook.get_id() + "_" + page.get_id()
@@ -1121,9 +1116,7 @@ class MainWindow(Gtk.Window):
                 print(tag_list)
                 tags = get_unique_list_insertion_order(tag_list)
                 if self.current_yearbook.child is None:
-                    print("Retrieving images with tags %s " % tags)
                     candidate_images = self.corpus.get_images_with_tags_strict(tags)
-                    print(len(candidate_images))
                 else:
                     candidate_images = self.corpus.get_images_for_child(tags, self.current_yearbook.child)
 
@@ -1365,7 +1358,6 @@ class MainWindow(Gtk.Window):
                                            if
                                            img.endswith("jpg") or img.endswith("jpeg") or img.endswith("png")
                                            or img.endswith('JPG') or img.endswith('PNG')]
-                            print("length of custom images %s " % len(page_images))
                     else:
                         print("Showing only a blank image for the custom pages")
                         page_images = [
@@ -1396,12 +1388,16 @@ class MainWindow(Gtk.Window):
             if self.current_yearbook.parent_yearbook is not None:
                 try:
                     parent_page: Page = yearbook_page.parent_pages[-1]
-                    if set(yearbook_page.photo_list) == set(parent_page.photo_list):
-                        print("photo list is same as parent")
-                        page_collage: UserCollage = parent_page.history[-1].duplicate_with_layout()
+
+                    # This will work by side effect and check if there's a layout for the parent
+
+                    # if set(yearbook_page.photo_list) == set(parent_page.photo_list):
+                    #    print("photo list is same as parent")
+                    #    page_collage: UserCollage = parent_page.history[-1].duplicate_with_layout()
                 except IndexError:
-                    if not yearbook_page.is_optional:
-                        rebuild = True
+                    #if not yearbook_page.is_optional:
+                    #    #rebuild = True
+                    pass
 
             if yearbook_page.has_parent_pins_changed():
                 new_images = yearbook_page.get_filenames_parent_pins_not_on_page()
@@ -1911,14 +1907,14 @@ class MainWindow(Gtk.Window):
 
         self.render_right_page(right_page)
 
-    def lock_page_left(self, button):
+    def edit_page_left(self, button):
         left_page = self.current_yearbook.pages[self.curr_page_index]
-        update_flag_for_page(left_page, button, "locked")
+        update_flag_for_page(left_page, button, "edited")
         self.render_left_page(left_page)
 
-    def lock_page_right(self, button):
+    def edit_page_right(self, button):
         right_page = self.current_yearbook.pages[self.next_page_index]
-        update_flag_for_page(right_page, button, "locked")
+        update_flag_for_page(right_page, button, "edited")
         self.render_right_page(right_page)
 
     def pickle_book(self, store: Gtk.TreeStore, treepath: Gtk.TreePath, treeiter: Gtk.TreeIter):
@@ -1974,8 +1970,8 @@ class MainWindow(Gtk.Window):
 
         self.update_favorites_images()
         self.update_label_text()
-        self.btn_lock_page_left.set_active(left_page.is_locked())
-        self.btn_lock_page_right.set_active(right_page.is_locked())
+        self.btn_edit_page_left.set_active(left_page.is_locked())
+        self.btn_edit_page_right.set_active(right_page.is_locked())
 
         self.btn_pin_page_left.set_active(left_page.is_pinned())
         self.btn_pin_page_right.set_active(right_page.is_pinned())
