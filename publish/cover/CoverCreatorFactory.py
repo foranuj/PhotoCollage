@@ -6,7 +6,7 @@ class CoverSettings:
         pass
 
     def get_top_left_back_cover(self):
-        return 0.75 * inch, 0.75 * inch
+        return 0, 0
 
     def get_top_left_front_cover(self):
         pass
@@ -24,13 +24,13 @@ class HardCoverSettings(CoverSettings):
         return 19 * inch, 12.75 * inch
 
     def get_cover_img_dims(self):
-        width = 8.625 * inch
-        height = 11.25 * inch
+        width = 9.5 * inch
+        height = 12.75 * inch
         return width, height
 
     def get_top_left_front_cover(self):
         x = 9.625 * inch
-        y = 0.75 * inch
+        y = 0. * inch
         return x, y
 
     def get_title_corner(self):

@@ -34,6 +34,7 @@ from data.model.ModelCreator import get_tree_model
 from data.pickle.utils import get_pickle_path, get_jpg_path
 from data.rankers import RankerFactory
 from data.sqllite.reader import create_connection
+from fonts.FontSettings import TITLE_FONT_SIGNIKA
 from images.ImageWindow import ImageWindow
 from pdf_utils.pdf_compressor import compress
 from photocollage import APP_NAME, artwork, collage, render
@@ -475,27 +476,75 @@ def pin_all_photos_on_page(page: Page, img_preview: ImagePreviewArea):
         pass
 
 
+def draw_monticello_cover(canvas_cover, school, grade, child, title_corner):
+    from reportlab.lib import colors
+    from reportlab.pdfbase import pdfmetrics
+    from reportlab.pdfbase.ttfonts import TTFont
+
+    pdfmetrics.registerFont(TTFont('Eczar', 'Eczar-SemiBold.ttf'))
+    pdfmetrics.registerFont(TTFont('Signika', 'Signika-Bold.ttf'))
+
+    # Create textobject
+    textobject = canvas_cover.beginText()
+
+    # Change text color
+    textobject.setFillColor(colors.black)
+
+    # Set text location (x, y)
+    textobject.setTextOrigin(title_corner[0], title_corner[1])
+    # Set font face and size
+    textobject.setFont('Eczar', 40)
+    # Write a line of text + carriage return
+    textobject.textLine(text=school)
+    textobject.setFont('Eczar', 28)
+    textobject.moveCursor(125, 1)
+    textobject.textLine(text='2021-2022')
+    textobject.moveCursor(-25, 1)
+    textobject.textLine(text=grade)
+    canvas_cover.drawText(textobject)
+    canvas_cover.saveState()
+    canvas_cover.rotate(7.7)
+    canvas_cover.setFont('Eczar', 20, leading=110)
+    textobject1 = canvas_cover.beginText()
+    textLen = pdfmetrics.stringWidth(child, 'Eczar', 20)
+    textobject1.setTextOrigin(title_corner[0] + 144 - textLen, -65)
+    textobject1.textLine(child)
+    canvas_cover.drawText(textobject1)
+    canvas_cover.restoreState()
+    # Write text to the canvas
+
+
 def draw_title_on_canvas(canvas_cover, title: str, title_corner):
     from reportlab.lib import colors
     from reportlab.lib.enums import TA_CENTER
+    from reportlab.pdfbase import pdfmetrics
+    from reportlab.pdfbase.ttfonts import TTFont
+
+    pdfmetrics.registerFont(TTFont('Eczar', 'Eczar-SemiBold.ttf'))
+    pdfmetrics.registerFont(TTFont('Signika', 'Signika-Bold.ttf'))
+
+    fontsize = 70
 
     # On the front cover we draw the text
-    canvas_cover.setFont("Signika", 34)
+    canvas_cover.setFont("Eczar", fontsize)
     # TODO:: Have to do the math to figure out the name
 
-    frame1 = Frame(title_corner[0], title_corner[1], 3.5 * inch, 1.5 * inch, showBoundary=0)
+    width = 4.5 * inch
+    height = 4 * inch
+
+    frame1 = Frame(title_corner[0], title_corner[1], width, height, showBoundary=0)
     styles = getSampleStyleSheet()
     styles.add(
-        ParagraphStyle(name='TitleStyle', fontName='Signika', fontSize=34, leading=36,
+        ParagraphStyle(name='TitleStyle', fontName='Eczar', fontSize=fontsize, leading=120,
                        textColor=colors.black, alignment=TA_CENTER))
 
     # name = "\n".join(yearbook.child.split(" "))
     story = [Paragraph(title, styles['TitleStyle'])]
-    story_inframe = KeepInFrame(3.5 * inch, 1.5 * inch, story)
-    frame1.addFromList([story_inframe], canvas_cover)
+    story_in_frame = KeepInFrame(width, height, story)
+    frame1.addFromList([story_in_frame], canvas_cover)
 
 
-def stitch_print_ready_cover(pdf_path: str, yearbook: Yearbook, cover_settings: CoverSettings, conn=None):
+def stitch_print_ready_cover(pdf_path: str, yearbook: Yearbook, cover_settings: CoverSettings, basedir=None):
     if cover_settings is None:
         return None
 
@@ -515,6 +564,7 @@ def stitch_print_ready_cover(pdf_path: str, yearbook: Yearbook, cover_settings: 
     with Image.open(yearbook.pages[-1].image) as im:
         im.thumbnail(cover_img_dims, Image.ANTIALIAS)
         im.save(yearbook.pages[-1].image + "_resized.png")
+
     canvas_cover.drawImage(yearbook.pages[-1].image + "_resized.png", top_left_back_cover[0], top_left_back_cover[1],
                            width=cover_img_dims[0], height=cover_img_dims[1])
     back_cover.drawImage(yearbook.pages[-1].image + "_resized.png", top_left_back_cover[0], top_left_back_cover[1],
@@ -526,6 +576,7 @@ def stitch_print_ready_cover(pdf_path: str, yearbook: Yearbook, cover_settings: 
     with Image.open(yearbook.pages[0].image) as im:
         im.thumbnail(cover_img_dims, Image.ANTIALIAS)
         im.save(yearbook.pages[0].image + "_resized.png")
+
     canvas_cover.drawImage(yearbook.pages[0].image + "_resized.png", top_left_front_cover[0],
                            top_left_front_cover[1],
                            width=cover_img_dims[0],
@@ -535,16 +586,34 @@ def stitch_print_ready_cover(pdf_path: str, yearbook: Yearbook, cover_settings: 
                           height=cover_img_dims[1])
 
     if yearbook.child is not None:
-        title_str = "\n".join(yearbook.child.split(" "))
-
-        # if conn is not None:
-        #    desired_title_str = get_desired_name(conn, order_id=yearbook.orders[0].wix_order_id)
-        #    print("Creating new title string, %s " % desired_title_str)
-        #    title_str = "\n".join(desired_title_str)
-
-        draw_title_on_canvas(canvas_cover, title_str, cover_settings.get_title_corner())
-        draw_title_on_canvas(front_cover, title_str, (4.5 * inch, 9.25 * inch))
+        draw_monticello_cover(canvas_cover, "Monticello Academy", yearbook.classroom, yearbook.child,
+                              (11 * inch, 7.5 * inch))
+        draw_monticello_cover(front_cover, "Monticello Academy", yearbook.classroom, yearbook.child,
+                              (2.5 * inch, 7.5 * inch))
         print("Finished drawing title")
+
+        # Now paste an image for the child
+        cover_img_dir = os.path.join(basedir, yearbook.school, "FrontCoverPhotos", yearbook.child)
+
+        # Let's pick the first file from the dir and ignore the files that are rotated. We will
+        # rotate the original file again
+        cover_img_name = [img for img in os.listdir(cover_img_dir) if img.endswith(".png") and 'rotated' not in img][0]
+
+        img = Image.open(os.path.join(cover_img_dir, cover_img_name)).convert('RGBA')
+        rotated_img_path = os.path.join(os.path.join(cover_img_dir, cover_img_name + "_rotated.png"))
+
+        rotate_img = img.rotate(7.7, fillcolor=0, expand=True)
+        rotate_img.thumbnail((1152, 1536), Image.ANTIALIAS)
+        rotate_img.save(rotated_img_path)
+
+        # canvas_cover.drawImage(os.path.join(cover_img_dir, cover_img_name), 11 * inch, 1.75 * inch,
+        #                       width=2.5 * inch, height=3 * inch)
+
+        canvas_cover.drawImage(rotated_img_path, 10.62 * inch, 1.1 * inch, width=3 * inch, height=4 * inch,
+                               mask='auto')
+
+        front_cover.drawImage(os.path.join(cover_img_dir, cover_img_name), 2 * inch, 2.1 * inch,
+                              width=3 * inch, height=4 * inch, mask='auto')
 
     canvas_cover.save()
     front_cover.save()
@@ -1023,15 +1092,33 @@ class MainWindow(Gtk.Window):
 
     def update_flow_box_with_images(self, flow_box, page: Page):
 
+        print("Update flow with images ")
+        print(page.page_type)
         if not page.personalized:
-            print("Load image as is, %s, %s" % (page.event_name, page.image))
-            candidate_images = [page.image]
+            if page.is_optional:
+                child_order_id = self.current_yearbook.orders[0].student_id
+                custom_order_dir = os.path.join(self.corpus_base_dir, self.current_yearbook.school,
+                                                'CustomPhotos',
+                                                child_order_id)
+
+                print(custom_order_dir)
+                if os.path.exists(custom_order_dir):
+                    candidate_images = [os.path.join(custom_order_dir, img) for img in os.listdir(custom_order_dir)
+                                   if
+                                   img.endswith("jpg") or img.endswith("jpeg") or img.endswith("png")
+                                   or img.endswith('JPG') or img.endswith('PNG')]
+                    print("updating flow box :: -> length of custom images %s " % len(candidate_images))
+
+            else:
+                print("Load image as is, %s, %s" % (page.event_name, page.image))
+                candidate_images = [page.image]
         else:
             key = self.current_yearbook.get_id() + "_" + page.get_id()
             if key in self.flow_box_images_cache:
                 candidate_images = self.flow_box_images_cache[key]
             else:
                 tag_list = get_tag_list_for_page(self.current_yearbook, page)
+                print(tag_list)
                 tags = get_unique_list_insertion_order(tag_list)
                 if self.current_yearbook.child is None:
                     print("Retrieving images with tags %s " % tags)
@@ -1267,17 +1354,20 @@ class MainWindow(Gtk.Window):
                     # This is a custom page
                     print("////////////RETRIEVE CUSTOM IMAGES/////////////////////")
                     if len(self.current_yearbook.orders) > 0:
-                        child_order_id = self.current_yearbook.orders[0].wix_order_id
+                        child_order_id = self.current_yearbook.orders[0].student_id
                         custom_order_dir = os.path.join(self.corpus_base_dir, self.current_yearbook.school,
                                                         'CustomPhotos',
                                                         child_order_id)
 
+                        print(custom_order_dir)
                         if os.path.exists(custom_order_dir):
                             page_images = [os.path.join(custom_order_dir, img) for img in os.listdir(custom_order_dir)
                                            if
                                            img.endswith("jpg") or img.endswith("jpeg") or img.endswith("png")
                                            or img.endswith('JPG') or img.endswith('PNG')]
+                            print("length of custom images %s " % len(page_images))
                     else:
+                        print("Showing only a blank image for the custom pages")
                         page_images = [
                             os.path.join(self.corpus_base_dir, self.current_yearbook.school, "Theme", "blank.png")]
 
@@ -1579,7 +1669,8 @@ class MainWindow(Gtk.Window):
 
         cover_settings: CoverSettings = get_cover_settings("SoftCover")
         stitch_print_ready_cover(pdf_base_path + "_SoftCover",
-                                 _yearbook, cover_settings, self.db_connection)
+                                 _yearbook, cover_settings,
+                                 self.yearbook_parameters['corpus_base_dir'])
 
         pdf_full_path = pdf_base_path + "HardCover" + extension
         compressed_out_path = self.get_pdf_base_path(_yearbook) + "_compressed.pdf"
@@ -1648,7 +1739,8 @@ class MainWindow(Gtk.Window):
                 if cover_settings is not None:
                     print("STEP 2: Create_cover_pages with %s " % order.cover_format)
                     cover_path = stitch_print_ready_cover(pdf_base_path + "_" + order.cover_format + extension,
-                                                          _yearbook, cover_settings, self.db_connection)
+                                                          _yearbook, cover_settings,
+                                                          self.yearbook_parameters['corpus_base_dir'])
                     # Upload the cover
                     order.cover_url = get_url_from_file_id(upload_with_item_check('1cp2LyftBr3t3T3ImJIiBEtxromlSwawm',
                                                                                   cover_path,
@@ -1724,7 +1816,8 @@ class MainWindow(Gtk.Window):
                 if cover_settings is not None:
                     print("STEP 2: Create_cover_pages with %s " % order.cover_format)
                     cover_path = stitch_print_ready_cover(pdf_base_path + "_" + order.cover_format + extension,
-                                                          _yearbook, cover_settings, self.db_connection)
+                                                          _yearbook, cover_settings,
+                                                          self.yearbook_parameters['corpus_base_dir'])
 
                     base_name = "_".join(_yearbook.get_file_id().split()) + "cover.pdf"
                     print("Cover name %s " % base_name)
@@ -1844,7 +1937,7 @@ class MainWindow(Gtk.Window):
 
     def pickle_all_books(self, button):
         print("Will be pickling all books")
-        self.treeModel.foreach(self.render_and_pickle_yearbook)
+        self.treeModel.foreach(self.render_and_save_yearbook)
 
     def select_next_page(self, button):
         # Increment to the next left page
