@@ -121,7 +121,8 @@ def create_yearbook_from_db(dir_params: {}, school_name: str, classroom: str, ch
                 # The number of images in the folder should be greater than two
                 child_student_id = orders[0].student_id
                 custom_order_dir = os.path.join(corpus_base_dir, school_name, 'CustomPhotos', child_student_id)
-                print(custom_order_dir)
+                print("Custom order directory %s" % custom_order_dir)
+
                 if os.path.exists(custom_order_dir):
                     if len(os.listdir(custom_order_dir)) < 2:
                         continue

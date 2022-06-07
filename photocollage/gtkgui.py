@@ -1092,15 +1092,33 @@ class MainWindow(Gtk.Window):
 
     def update_flow_box_with_images(self, flow_box, page: Page):
 
+        print("Update flow with images ")
+        print(page.page_type)
         if not page.personalized:
-            print("Load image as is, %s, %s" % (page.event_name, page.image))
-            candidate_images = [page.image]
+            if page.is_optional:
+                child_order_id = self.current_yearbook.orders[0].student_id
+                custom_order_dir = os.path.join(self.corpus_base_dir, self.current_yearbook.school,
+                                                'CustomPhotos',
+                                                child_order_id)
+
+                print(custom_order_dir)
+                if os.path.exists(custom_order_dir):
+                    candidate_images = [os.path.join(custom_order_dir, img) for img in os.listdir(custom_order_dir)
+                                   if
+                                   img.endswith("jpg") or img.endswith("jpeg") or img.endswith("png")
+                                   or img.endswith('JPG') or img.endswith('PNG')]
+                    print("updating flow box :: -> length of custom images %s " % len(candidate_images))
+
+            else:
+                print("Load image as is, %s, %s" % (page.event_name, page.image))
+                candidate_images = [page.image]
         else:
             key = self.current_yearbook.get_id() + "_" + page.get_id()
             if key in self.flow_box_images_cache:
                 candidate_images = self.flow_box_images_cache[key]
             else:
                 tag_list = get_tag_list_for_page(self.current_yearbook, page)
+                print(tag_list)
                 tags = get_unique_list_insertion_order(tag_list)
                 if self.current_yearbook.child is None:
                     print("Retrieving images with tags %s " % tags)
@@ -1336,17 +1354,20 @@ class MainWindow(Gtk.Window):
                     # This is a custom page
                     print("////////////RETRIEVE CUSTOM IMAGES/////////////////////")
                     if len(self.current_yearbook.orders) > 0:
-                        child_order_id = self.current_yearbook.orders[0].wix_order_id
+                        child_order_id = self.current_yearbook.orders[0].student_id
                         custom_order_dir = os.path.join(self.corpus_base_dir, self.current_yearbook.school,
                                                         'CustomPhotos',
                                                         child_order_id)
 
+                        print(custom_order_dir)
                         if os.path.exists(custom_order_dir):
                             page_images = [os.path.join(custom_order_dir, img) for img in os.listdir(custom_order_dir)
                                            if
                                            img.endswith("jpg") or img.endswith("jpeg") or img.endswith("png")
                                            or img.endswith('JPG') or img.endswith('PNG')]
+                            print("length of custom images %s " % len(page_images))
                     else:
+                        print("Showing only a blank image for the custom pages")
                         page_images = [
                             os.path.join(self.corpus_base_dir, self.current_yearbook.school, "Theme", "blank.png")]
 

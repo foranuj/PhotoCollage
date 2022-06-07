@@ -177,7 +177,7 @@ class Page:
 
     @property
     def is_optional(self):
-        return self.page_type.startswith('Optional') or self.page_type.startswith('optional')
+        return self.page_type.startswith('Custom') or self.page_type.startswith('custom')
 
     @property
     def is_static(self):
