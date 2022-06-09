@@ -268,16 +268,9 @@ def pickle_yearbook(_yearbook: Yearbook, stub_dir: str):
     os.makedirs(path1.parent, exist_ok=True)
 
     for page in _yearbook.pages:
-        if page.title.startswith("Events"):
-            page.title = "Turkey Trot & Gingerbread Run"
-
-        if page.title.startswith("Grade5 Science"):
-            page.title = "Walden West Science Camp"
-
-        if page.title.startswith("Vargas"):
-            page.title = "Spirit Days"
-
-
+        if page.event_name.startswith("Winter"):
+            print("Updating page at number %s " % page.number)
+            page.page_type = "Static Page"
 
     # Important to open the file in binary mode
     with open(pickle_filename, 'wb') as f:
