@@ -1113,7 +1113,6 @@ class MainWindow(Gtk.Window):
                 candidate_images = self.flow_box_images_cache[key]
             else:
                 tag_list = get_tag_list_for_page(self.current_yearbook, page)
-                print(tag_list)
                 tags = get_unique_list_insertion_order(tag_list)
                 if self.current_yearbook.child is None:
                     candidate_images = self.corpus.get_images_with_tags_strict(tags)
@@ -1144,18 +1143,22 @@ class MainWindow(Gtk.Window):
                 pass
 
         counter = 0
+        reduced_candidates = []
         for img in candidate_images:
             # Let's not add the image to the viewer if it's on the page.
             if img in used_images_set or img in self.deleted_images:
                 continue
+            else:
+                reduced_candidates.append(img)
 
+        for img in reduced_candidates:
             try:
                 pixbuf = get_orientation_fixed_pixbuf(img)
                 if pixbuf is not None:
                     image = Gtk.Image.new_from_pixbuf(pixbuf)
                     img_box = Gtk.EventBox()
                     img_box.add(image)
-                    img_box.connect("button_press_event", self.invoke_add_image, img, candidate_images)
+                    img_box.connect("button_press_event", self.invoke_add_image, img, reduced_candidates)
                     flow_box.add(img_box)
                     counter = counter + 1
                     del image
