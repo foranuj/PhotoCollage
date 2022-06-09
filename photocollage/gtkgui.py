@@ -358,6 +358,12 @@ class ImagePreviewArea(Gtk.DrawingArea):
                 # Let's update the flow images to have this image show up in the bottom
                 img_counter, total_count = self.parent.update_flow_box_with_images(flow_box, current_page)
                 lbl_ref.set_text(lbl_text + " %s/%s" % (img_counter, total_count))
+                print("Looking for %s in favorites dir" % cell.photo.filename)
+                if os.path.basename(cell.photo.filename) in os.listdir(self.parent.get_favorites_folder()):
+                    print("Re-adding to the list of favorites as we deleted a photo that was a favorite")
+                    # Check if this was in the favorites before
+                    self.parent.favorite_images.add(cell.photo.filename)
+                    self.parent.update_favorites_images()
 
             elif dist_pinned <= 8 * 8:
                 if cell.photo.filename in current_page.pinned_photos:
@@ -1001,6 +1007,7 @@ class MainWindow(Gtk.Window):
         if len(self.favorite_images) == 0:
             self.favorite_images = load_favorites_pickle(self.get_folder("Favorites"))
 
+        print("Updating favorites, ....")
         flowbox = self.img_favorites_flow_box
         [flowbox.remove(child) for child in flowbox.get_children()]
         flowbox.set_valign(Gtk.Align.START)
