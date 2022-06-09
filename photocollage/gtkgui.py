@@ -1093,7 +1093,7 @@ class MainWindow(Gtk.Window):
     def update_flow_box_with_images(self, flow_box, page: Page):
 
         if not page.personalized:
-            if page.is_optional:
+            if page.is_optional and self.current_yearbook.child is not None:
                 child_order_id = self.current_yearbook.orders[0].student_id
                 custom_order_dir = os.path.join(self.corpus_base_dir, self.current_yearbook.school,
                                                 'CustomPhotos',
