@@ -482,72 +482,62 @@ def pin_all_photos_on_page(page: Page, img_preview: ImagePreviewArea):
         pass
 
 
-def draw_monticello_cover(canvas_cover, school, grade, child, title_corner):
+def draw_monticello_cover_details(canvas_cover, yearbook, cover_settings, basedir):
     from reportlab.lib import colors
     from reportlab.pdfbase import pdfmetrics
     from reportlab.pdfbase.ttfonts import TTFont
-
-    pdfmetrics.registerFont(TTFont('Eczar', 'Eczar-SemiBold.ttf'))
-    pdfmetrics.registerFont(TTFont('Signika', 'Signika-Bold.ttf'))
-
-    # Create textobject
-    textobject = canvas_cover.beginText()
-
-    # Change text color
-    textobject.setFillColor(colors.black)
-
-    # Set text location (x, y)
-    textobject.setTextOrigin(title_corner[0], title_corner[1])
-    # Set font face and size
-    textobject.setFont('Eczar', 40)
-    # Write a line of text + carriage return
-    textobject.textLine(text=school)
-    textobject.setFont('Eczar', 28)
-    textobject.moveCursor(125, 1)
-    textobject.textLine(text='2021-2022')
-    textobject.moveCursor(-25, 1)
-    textobject.textLine(text=grade)
-    canvas_cover.drawText(textobject)
-    canvas_cover.saveState()
-    canvas_cover.rotate(7.7)
-    canvas_cover.setFont('Eczar', 20, leading=110)
-    textobject1 = canvas_cover.beginText()
-    textLen = pdfmetrics.stringWidth(child, 'Eczar', 20)
-    textobject1.setTextOrigin(title_corner[0] + 144 - textLen, -65)
-    textobject1.textLine(child)
-    canvas_cover.drawText(textobject1)
-    canvas_cover.restoreState()
-    # Write text to the canvas
-
-
-def draw_title_on_canvas(canvas_cover, title: str, title_corner):
-    from reportlab.lib import colors
     from reportlab.lib.enums import TA_CENTER
-    from reportlab.pdfbase import pdfmetrics
-    from reportlab.pdfbase.ttfonts import TTFont
 
     pdfmetrics.registerFont(TTFont('Eczar', 'Eczar-SemiBold.ttf'))
     pdfmetrics.registerFont(TTFont('Signika', 'Signika-Bold.ttf'))
-
-    fontsize = 70
-
-    # On the front cover we draw the text
-    canvas_cover.setFont("Eczar", fontsize)
-    # TODO:: Have to do the math to figure out the name
-
-    width = 4.5 * inch
+    width = 6 * inch
     height = 4 * inch
 
-    frame1 = Frame(title_corner[0], title_corner[1], width, height, showBoundary=0)
+    # Frames starting X co-ord is total page width - half the page size (4.75 inches) - half the frame size (3 inches)
+    frame_x = cover_settings.get_page_size()[0] - (4.75 * inch) - (3 * inch)
+    frame1 = Frame(frame_x, 5.75 * inch, width, height, showBoundary=0)
     styles = getSampleStyleSheet()
     styles.add(
-        ParagraphStyle(name='TitleStyle', fontName='Eczar', fontSize=fontsize, leading=120,
+        ParagraphStyle(name='TitleStyle', fontName='Eczar', fontSize=160, leading=200,
+                       textColor=colors.black, alignment=TA_CENTER))
+    styles.add(
+        ParagraphStyle(name='YearStyle', fontName='Eczar', fontSize=120, leading=200,
                        textColor=colors.black, alignment=TA_CENTER))
 
-    # name = "\n".join(yearbook.child.split(" "))
-    story = [Paragraph(title, styles['TitleStyle'])]
+    styles.add(
+        ParagraphStyle(name='GradeStyle', fontName='Eczar', fontSize=120, leading=160,
+                       textColor=colors.black, alignment=TA_CENTER))
+
+    styles.add(
+        ParagraphStyle(name='ChildStyle', fontName='Eczar', fontSize=120, leading=260,
+                       textColor=colors.blue, alignment=TA_CENTER))
+
+    school = 'Monticello Academy'
+    story = [Paragraph(school, styles['TitleStyle']), Paragraph("2021-2022", styles['YearStyle']), Paragraph(yearbook.classroom, styles['GradeStyle']), Paragraph(yearbook.child, styles['ChildStyle'])]
+
     story_in_frame = KeepInFrame(width, height, story)
     frame1.addFromList([story_in_frame], canvas_cover)
+
+    canvas_cover.saveState()
+
+    canvas_cover.rotate(10)
+
+    cover_img_dir = os.path.join(basedir, yearbook.school, "FrontCoverPhotos", yearbook.child)
+
+    # Let's pick the first file from the dir and ignore the files that are rotated. We will
+    # rotate the original file again
+    cover_img_name = [img for img in os.listdir(cover_img_dir) if img.endswith(".png") and 'rotated' not in img][0]
+    img = os.path.join(cover_img_dir, cover_img_name)
+
+    pil_img = Image.open(img)
+    ratio = pil_img.size[1] / pil_img.size[0]
+
+    canvas_cover.setFillColor(colors.white)
+    canvas_cover.rect(cover_settings.get_top_left_front_cover()[0] + 2.25 * inch, - 1.2 * inch, 3.5 * inch, 3.5 * ratio * inch, fill=1)
+    canvas_cover.drawImage(img, cover_settings.get_top_left_front_cover()[0] + 2.5 * inch, - 0.75 * inch, width=3 * inch, height=3 * ratio * inch,
+                           mask='auto')
+
+    canvas_cover.restoreState()
 
 
 def stitch_print_ready_cover(pdf_path: str, yearbook: Yearbook, cover_settings: CoverSettings, basedir=None):
@@ -576,6 +566,20 @@ def stitch_print_ready_cover(pdf_path: str, yearbook: Yearbook, cover_settings: 
     back_cover.drawImage(yearbook.pages[-1].image + "_resized.png", top_left_back_cover[0], top_left_back_cover[1],
                          width=cover_img_dims[0], height=cover_img_dims[1])
 
+    if yearbook.child is not None:
+        back_cover_photo_dir = os.path.join(basedir, yearbook.school, "BackCoverPhotos", yearbook.child)
+        if os.path.exists(back_cover_photo_dir):
+            back_cover_img = os.path.join(back_cover_photo_dir, [img for img in os.listdir(back_cover_photo_dir) if "resized" not in img and ".png" in img][0])
+            back_cover_width = 3.625 * inch
+            back_cover_height = 4.75 * inch
+
+            with Image.open(back_cover_img) as im:
+                im.thumbnail((back_cover_width, back_cover_height), Image.ANTIALIAS)
+                im.save(back_cover_img + "_resized.png")
+
+            back_cover.drawImage(back_cover_img + "_resized.png", 3 * inch, 3.5 * inch, width=back_cover_width, height=back_cover_height)
+            canvas_cover.drawImage(back_cover_img + "_resized.png", 3 * inch, 3.5 * inch, width=back_cover_width, height=back_cover_height)
+
     # Then draw the front cover page
     top_left_front_cover = cover_settings.get_top_left_front_cover()
 
@@ -592,10 +596,10 @@ def stitch_print_ready_cover(pdf_path: str, yearbook: Yearbook, cover_settings: 
                           height=cover_img_dims[1])
 
     if yearbook.child is not None:
-        draw_monticello_cover(canvas_cover, "Monticello Academy", yearbook.classroom, yearbook.child,
-                              (11 * inch, 7.5 * inch))
-        draw_monticello_cover(front_cover, "Monticello Academy", yearbook.classroom, yearbook.child,
-                              (2.5 * inch, 7.5 * inch))
+        draw_monticello_cover_details(canvas_cover, yearbook,
+                                      cover_settings, basedir)
+        draw_monticello_cover_details(front_cover, yearbook,
+                                      cover_settings, basedir)
         print("Finished drawing title")
 
         # Now paste an image for the child
@@ -609,17 +613,19 @@ def stitch_print_ready_cover(pdf_path: str, yearbook: Yearbook, cover_settings: 
         rotated_img_path = os.path.join(os.path.join(cover_img_dir, cover_img_name + "_rotated.png"))
 
         rotate_img = img.rotate(7.7, fillcolor=0, expand=True)
-        rotate_img.thumbnail((1152, 1536), Image.ANTIALIAS)
+        ratio = rotate_img.size[1] / rotate_img.size[0]
+
+        rotate_img.thumbnail((1152, 1152 * ratio), Image.ANTIALIAS)
         rotate_img.save(rotated_img_path)
 
         # canvas_cover.drawImage(os.path.join(cover_img_dir, cover_img_name), 11 * inch, 1.75 * inch,
         #                       width=2.5 * inch, height=3 * inch)
+        #canvas_cover.rect(10 * inch, 0.8 * inch, 4 * inch, 5.5 * inch, fill=0)
+        #canvas_cover.drawImage(rotated_img_path, 10.62 * inch, 0.9 * inch, width=3 * inch, height=4 * inch,
+        #                       mask='auto')
 
-        canvas_cover.drawImage(rotated_img_path, 10.62 * inch, 1.1 * inch, width=3 * inch, height=4 * inch,
-                               mask='auto')
-
-        front_cover.drawImage(os.path.join(cover_img_dir, cover_img_name), 2 * inch, 2.1 * inch,
-                              width=3 * inch, height=4 * inch, mask='auto')
+        #front_cover.drawImage(rotated_img_path, 2 * inch, 2.1 * inch,
+        #                      width=3 * inch, height=4 * inch, mask='auto')
 
     canvas_cover.save()
     front_cover.save()
@@ -1629,11 +1635,11 @@ class MainWindow(Gtk.Window):
 
             print("Creating PDF from images")
             create_pdf_from_images(pdf_full_path, images)
-            dirname = os.path.dirname(pdf_full_path)
-            base_name = os.path.basename(pdf_full_path)
-            compressed_output_path = os.path.join(dirname, base_name + "_compressed.pdf")
-            compress(pdf_full_path, compressed_output_path, power=1)
-            self.yearbook_to_file_map[yearbook.get_id()] = compressed_output_path
+            #dirname = os.path.dirname(pdf_full_path)
+            #base_name = os.path.basename(pdf_full_path)
+            #compressed_output_path = os.path.join(dirname, base_name + "_compressed.pdf")
+            #compress(pdf_full_path, compressed_output_path, power=1)
+            self.yearbook_to_file_map[yearbook.get_id()] = pdf_full_path
             return False
         else:
             print("Will copy the parent PDF here")
@@ -1673,8 +1679,8 @@ class MainWindow(Gtk.Window):
         extension = ".pdf"
         pdf_base_path = self.get_pdf_base_path(_yearbook)
 
-        cover_settings: CoverSettings = get_cover_settings("SoftCover")
-        stitch_print_ready_cover(pdf_base_path + "_SoftCover",
+        cover_settings: CoverSettings = get_cover_settings("HardCover")
+        stitch_print_ready_cover(pdf_base_path + "_HardCover",
                                  _yearbook, cover_settings,
                                  self.yearbook_parameters['corpus_base_dir'])
 

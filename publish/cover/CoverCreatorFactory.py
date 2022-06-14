@@ -24,7 +24,7 @@ class HardCoverSettings(CoverSettings):
         return 19 * inch, 12.75 * inch
 
     def get_cover_img_dims(self):
-        width = 9.5 * inch
+        width = 9.625 * inch
         height = 12.75 * inch
         return width, height
 
