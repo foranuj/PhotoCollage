@@ -70,7 +70,7 @@ class LuluIntegrationTests(unittest.TestCase):
         get_job_details(id)
 
     def test_job_details_for(self):
-        get_job_details(client_id, client_secret, lulu_api_url, "834613")
+        get_job_details(client_id, client_secret, lulu_api_url, "856193")
 
     def test_submit_one_order(self):
         payload = self.get_one_item_payload()
@@ -198,14 +198,15 @@ class LuluIntegrationTests(unittest.TestCase):
         { "external_id": "RETHINK_YEARBOOKS", 
                  "line_items" : [
                  {
-                                "title": "10097_Fiona Corcoran",
-                                "pod_package_id": "0850X1100FCPREPB080CW444GXX",
+                                "title": "Monticello Proof Hard Cover",
+                                "pod_package_id": "0850X1100FCPRECW080CW444GXX",
+                                                    
                                 "quantity": 1,
                                 "interior": {
-                                    "source_url": "https://drive.google.com/uc?export=download&confirm=9iBg&id=1-GnsJUuonok_aWqb2eRdAYxcdEoowMUN"
+                                    "source_url": "https://www.googleapis.com/drive/v3/files/1FVgsYrHKE8u8CNTijFibFNsJ0P_EeZvF?alt=media&key=AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
                                 },
                                 "cover": {
-                                    "source_url": "https://drive.google.com/uc?export=download&confirm=9iBg&id=11wPH82kbggXbviR9Pm4HdyEYUzicYCMY"
+                                    "source_url": "https://drive.google.com/uc?export=download&id=1FVr5PyfHuMdglGMOGhtEWQWh_UjQOOi2"
                                 }
                 }
                 ],
