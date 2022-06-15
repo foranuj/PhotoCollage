@@ -41,12 +41,12 @@ class TestReader(unittest.TestCase):
     def test_get_order_details_for_child(self):
         # Srivardhan Srinivasan
         order_details: Optional[List[(str, str)]] = get_child_orders(self.yearbook_parameters['db_file_path'],
-                                                                     child_name='Aarish Mathur')
+                                                                     child_name='Nayna Sidharth Aneja')
 
         print(order_details)
 
-        assert (len(order_details) == 1)
-        assert (order_details[0] == 'Digital', '10039')
+        assert (len(order_details) == 2)
+        assert (order_details[0] == 'Digital', '10017_1')
 
     def test_desired_name(self):
         order_id = '10067'

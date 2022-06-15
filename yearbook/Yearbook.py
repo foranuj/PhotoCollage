@@ -101,11 +101,13 @@ def create_yearbook_from_db(dir_params: {}, school_name: str, classroom: str, ch
     corpus_base_dir = dir_params['corpus_base_dir']
 
     if child is not None:
+        print("Creating yearbook for %s " % child)
         child_orders: Optional[List[(str, str)]] = get_child_orders(db_file_path, child)
         # We need at least 1 order
         if len(child_orders) > 0:
             orders = [OrderDetails(wix_order_id=order[1], cover_format=order[0], student_id=order[2]) for order in child_orders]
         else:
+            print("Missing order for child %s " % child)
             return None
 
     album_details: Cursor = get_album_details_for_school(db_file_path, school_name)
