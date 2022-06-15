@@ -342,7 +342,11 @@ class ImagePreviewArea(Gtk.DrawingArea):
             dist_delete = (cell.x + cell.w - 12 - x) ** 2 + (cell.y + 12 - y) ** 2
             dist_pinned = (cell.x + cell.w - 30 - x) ** 2 + (cell.y + 12 - y) ** 2
             if dist_delete <= 8 * 8:
-                self.collage.photolist.remove(cell.photo)
+                try:
+                    photo_to_remove: Photo = next(x for x in self.collage.photolist if x.filename == cell.photo.filename)
+                    self.collage.photolist.remove(photo_to_remove)
+                except IndexError:
+                    print("Can't delete from photolist")
                 if cell.photo.filename in current_page.pinned_photos:
                     current_page.remove_pinned_photo(cell.photo)
                 current_page.remove_from_photolist(cell.photo)
