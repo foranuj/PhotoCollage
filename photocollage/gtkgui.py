@@ -1368,12 +1368,14 @@ class MainWindow(Gtk.Window):
                                                         'CustomPhotos',
                                                         child_order_id)
 
-                        print(custom_order_dir)
                         if os.path.exists(custom_order_dir):
                             page_images = [os.path.join(custom_order_dir, img) for img in os.listdir(custom_order_dir)
                                            if
                                            img.endswith("jpg") or img.endswith("jpeg") or img.endswith("png")
                                            or img.endswith('JPG') or img.endswith('PNG')]
+                        else:
+                            page_images = [
+                                os.path.join(self.corpus_base_dir, self.current_yearbook.school, "Theme", "blank.png")]
                     else:
                         print("Showing only a blank image for the custom pages")
                         page_images = [
