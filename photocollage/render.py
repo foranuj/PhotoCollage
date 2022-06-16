@@ -368,7 +368,7 @@ class RenderingTask(Thread):
                                 font_to_use = TITLE_FONT_ECZAR
                                 w, h = font_to_use.getsize(title)
                                 dashed_img_draw.text((int((canvas.size[0] - w) / 2) + offset[0], 75),
-                                                     title, font=font_to_use, fill='#Dc3e37')
+                                                     title, font=font_to_use, fill='#060644')
                                 resized_canvas = canvas.resize((self.dimensions.out_w, self.dimensions.out_h))
                                 new_background.paste(resized_canvas, offset, mask=resized_canvas)
                             else:
