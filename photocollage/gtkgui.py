@@ -1612,10 +1612,12 @@ class MainWindow(Gtk.Window):
     def get_deleted_images_folder(self):
         return self.get_folder("Deleted")
 
+
     def print_all_pdfs(self, button):
-        self.treeModel.foreach(self.create_pdfs)
+        self.treeModel.foreach(self.print_file_size)
+        #self.treeModel.foreach(self.create_pdfs)
         self.btn_submit_order.set_sensitive(True)
-        print(self.yearbook_to_file_map)
+        #print(self.yearbook_to_file_map)
 
     def create_pdf_for_printing(self, yearbook: Yearbook, pdf_full_path: str, cover_format: str):
         if yearbook.parent_yearbook is None or yearbook.is_edited():
@@ -1677,6 +1679,18 @@ class MainWindow(Gtk.Window):
                                     + yearbook.child)
 
         return pdf_path
+
+    def print_file_size(self, store: Gtk.TreeStore, treepath: Gtk.TreePath, treeiter: Gtk.TreeIter):
+        _yearbook: Yearbook = store[treeiter][0]
+        _yearbook.print_yearbook_info()
+        if _yearbook.child is not None:
+            return
+
+        for page in _yearbook.pages:
+            for photo in page.photo_list:
+                size_in_bytes = os.path.getsize(photo.filename) * 1.0 / (1024 * 1024)
+                if size_in_bytes < 0.75:
+                    print(photo.filename)
 
     def create_pdfs(self, store: Gtk.TreeStore, treepath: Gtk.TreePath, treeiter: Gtk.TreeIter):
 
