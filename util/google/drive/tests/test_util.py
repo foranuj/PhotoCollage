@@ -9,8 +9,8 @@ class MyTestCase(unittest.TestCase):
         super(MyTestCase, self).__init__(*args, **kwargs)
 
     def test_file_upload(self):
-        pdf_file_path = "/Users/anshah/YearbookCreatorOut/anshah/.pdfs/Monticello_Preschool_2021_2022_pdfs/yearbook_stitched.pdf"
-        upload_to_folder('1BsahliyczRpMHKYMofDWcWry7utS1IyM', pdf_file_path)
+        pdf_file_path = "/Users/anshah/YearbookCreatorOut/anshah/pdf_outputs/Monticello_Preschool_2021_2022_Sunshine_Ryan Yu_cover.pdf"
+        upload_to_folder('1JYbuVmoCUxf1wuvkk8izPhC7jgRdR2rd', pdf_file_path)
 
     def test_check_file_exists(self):
         from googleapiclient.discovery import build

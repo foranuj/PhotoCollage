@@ -16,7 +16,7 @@ drive = GoogleDrive(gauth)
 
 SCOPES = ['https://www.googleapis.com/auth/drive']
 
-apiKey = "AIzaSyCUZS65rFygNfyws8bhv9wKeRDukn0niRk"
+apiKey = "AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
 
 
 def get_url_from_file_id(file_id: str):

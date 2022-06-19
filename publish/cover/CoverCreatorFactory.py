@@ -59,11 +59,11 @@ class SoftCoverSettings(CoverSettings):
 
 
 def get_cover_settings(cover_format: str) -> CoverSettings:
-    if cover_format == "HardCover" or cover_format == "Hardcover" or cover_format == "hardcover":
+    if cover_format.startswith("HardCover") or cover_format.startswith("Hardcover") or cover_format.startswith("hardcover"):
         return HardCoverSettings()
-    elif cover_format == "SoftCover" or cover_format == "Softcover" or cover_format == "softcover":
+    elif cover_format.startswith("SoftCover") or cover_format.startswith("Softcover") or cover_format.startswith("softcover"):
         return SoftCoverSettings()
-    elif cover_format == "Digital" or cover_format == "digital":
+    elif cover_format.startswith("Digital") or cover_format.startswith("digital"):
         return None
     else:
         raise ValueError(cover_format)
