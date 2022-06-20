@@ -8,9 +8,9 @@ class OrderDetails:
         self.lulu_job_id: str = None
         self.child: str = None
 
-        if self.cover_format == "Hardcover" or self.cover_format == "hardcover":
+        if self.cover_format.startswith("Hardcover") or self.cover_format.startswith("hardcover"):
             self.pod_package_id = "0850X1100FCPRECW080CW444GXX"
-        elif self.cover_format == "Softcover" or self.cover_format == "softcover":
+        elif self.cover_format.startswith("Softcover") or self.cover_format.startswith("softcover"):
             self.pod_package_id = "0850X1100FCPREPB080CW444GXX"
         else:
             self.pod_package_id = None
@@ -30,3 +30,6 @@ class OrderDetails:
             """ % (self.wix_order_id + "_" + self.child, self.pod_package_id, self.interior_pdf_url, self.cover_url)
 
         return data
+
+    def get_details(self):
+        return "%s %s %s" % (self.interior_pdf_url, self.cover_url, self.wix_order_id)
