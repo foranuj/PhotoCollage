@@ -232,169 +232,59 @@ class LuluIntegrationTests(unittest.TestCase):
         return """
 { "external_id": "RETHINK_YEARBOOKS", 
                  "line_items" : [{
-                                "title": "10107_Shuyi Jia",
+                                "title": "10009, 10110_Sophie Wu",
                                 "pod_package_id": "0850X1100FCPRECW080CW444GXX",
                                 "quantity": 1,
                                 "interior": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1zHvo2Vios-IkhUV8UWmkddGW1mFl_4Y8?alt=media&key=AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
+                                    "source_url": "https://www.googleapis.com/drive/v3/files/1_KeRCRiCyvlr-ryItiIHWMWG8XME6uLG?alt=media&key=AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
                                 },
                                 "cover": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1L-ufCikPNOLAHmL7EE5Mty1WasUS3EIF?alt=media&key=AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
+                                    "source_url": "https://www.googleapis.com/drive/v3/files/12cLXjk-3N4toFDKbjlSlpyVCf4QKhB5A?alt=media&key=AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
                                 }
                             }
             ,{
-                                "title": "10017_Vyaas Avali",
+                                "title": "10020_Tejaswin Kumar Satish",
                                 "pod_package_id": "0850X1100FCPRECW080CW444GXX",
                                 "quantity": 1,
                                 "interior": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1RsAjxW_oxow1V5Z5vFvlYVZ6DtbljbqG?alt=media&key=AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
+                                    "source_url": "https://www.googleapis.com/drive/v3/files/13jyealaleiVz-WNQiGDYJOUxuqkxK9BJ?alt=media&key=AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
                                 },
                                 "cover": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1J-74DBNAdo_--dxDtLz9Hdlti__Zw4GO?alt=media&key=AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
+                                    "source_url": "https://www.googleapis.com/drive/v3/files/1qmFVlTZNBvqlzks7y_cUmbGAMZ9DOLY6?alt=media&key=AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
                                 }
-                            }
-            ,{
-                                "title": "10002_Yi-Bo Maksim Liu",
+                            },
+                            {
+                                "title": "10131_Ryan Li",
                                 "pod_package_id": "0850X1100FCPRECW080CW444GXX",
                                 "quantity": 1,
                                 "interior": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1jAYAQqp_x-O6awGhx1yrKki55Yv2Vb2z?alt=media&key=AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
+                                    "source_url": "https://www.googleapis.com/drive/v3/files/1xO7hxKiQRuMMPsZcT7DOKmufq1ZQT8Tx?alt=media&key=AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
                                 },
                                 "cover": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1sTzFjZ3JycYeolG-zyZuGw3H_3abw-9O?alt=media&key=AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
+                                    "source_url": "https://www.googleapis.com/drive/v3/files/1eUvNNij2Uri5doSu5Lz1Lb-MgaFsT9V5?alt=media&key=AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
                                 }
-                            }
-            ,{
-                                "title": "10023_Aahana Namjoshi",
+                            },{
+                                "title": "10011_Matthew Yu",
                                 "pod_package_id": "0850X1100FCPRECW080CW444GXX",
                                 "quantity": 1,
                                 "interior": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1ddmz5UI-9hGN7_ot5-PDAxePATGFqxXu?alt=media&key=AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
+                                    "source_url": "https://www.googleapis.com/drive/v3/files/1eSb4HVonK7xHUu3880R3GKPHlDhGotBV?alt=media&key=AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
                                 },
                                 "cover": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1OwJpxvRjiZWMhvWWIYBD9sr4gmt7tHEP?alt=media&key=AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
-                                }
-                            }
-            ,{
-                                "title": "MC0003_Elliana Walker",
-                                "pod_package_id": "0850X1100FCPRECW080CW444GXX",
-                                "quantity": 1,
-                                "interior": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/188Su9IbgD-sHVAudn2fyLSgpX7M-_gpE?alt=media&key=AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
-                                },
-                                "cover": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1Tp8WdvbZD2PkUSg_ZomaTR_U4eBMW_A_?alt=media&key=AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
-                                }
-                            }
-            ,{
-                                "title": "MC0006_James Fishpaw",
-                                "pod_package_id": "0850X1100FCPRECW080CW444GXX",
-                                "quantity": 1,
-                                "interior": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1uOwN07gqRyMvxmjF4QQerxU1r-MW2x5C?alt=media&key=AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
-                                },
-                                "cover": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1Y2v1Ea_QaMq1sUxktBW3fsoIAz4gH3z3?alt=media&key=AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
-                                }
-                            }
-            ,{
-                                "title": "10022_Krish Dholaria",
-                                "pod_package_id": "0850X1100FCPRECW080CW444GXX",
-                                "quantity": 1,
-                                "interior": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1VxBwaoMpLEhgFQQAOcPuYmfdyjM_uVbO?alt=media&key=AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
-                                },
-                                "cover": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1rkftLxPZS1eViq6aQTy5rRHq-2wqDxSl?alt=media&key=AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
-                                }
-                            }
-            ,{
-                                "title": "10033_1_Ronin de Qhoury",
-                                "pod_package_id": "0850X1100FCPRECW080CW444GXX",
-                                "quantity": 1,
-                                "interior": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1F83B0uQS6y8NHSku_98krwFFQF2oqyKa?alt=media&key=AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
-                                },
-                                "cover": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1wX4x2wIbdF2MRs5jG2PmdjIdC-Vq0XZb?alt=media&key=AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
-                                }
-                            }
-            ,{
-                                "title": "10136_Sarah Lam",
-                                "pod_package_id": "0850X1100FCPRECW080CW444GXX",
-                                "quantity": 1,
-                                "interior": {
-                                                                       "source_url": "https://www.googleapis.com/drive/v3/files/1rBEHfzaEiDOVUV4EQ3cAZTyMiw08zTYQ?alt=media&key=AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
+                                    "source_url": "https://www.googleapis.com/drive/v3/files/11C_oDISc9R8jVOLrT2XSkE-FENHyPaXU?alt=media&key=AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
 
-                                },
-                                "cover": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1LuhMCQWAInLHe-Xm3QJSBnlDU5-VUpfd?alt=media&key=AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
                                 }
                             }
+            
             ,{
-                                "title": "10106_Mia Lee",
+                                "title": "10019_Tingyu Deng",
                                 "pod_package_id": "0850X1100FCPRECW080CW444GXX",
                                 "quantity": 1,
                                 "interior": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/15fsNC4jKyii4G8sPZtz472tbQP4CoOWk?alt=media&key=AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
+                                    "source_url": "https://www.googleapis.com/drive/v3/files/1Gstrm0DTkb7vTF44mYrQ6Smo5kn8NTkS?alt=media&key=AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
                                 },
                                 "cover": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1cYHcAmG0A6m_Qctfk37u2FrsUy9L0Kw6?alt=media&key=AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
-                                }
-                            }
-            ,{
-                                "title": "10054_Mira Nanduri Kale",
-                                "pod_package_id": "0850X1100FCPRECW080CW444GXX",
-                                "quantity": 1,
-                                "interior": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1xjp9cwJKg4tk-ak5WRZwnyFFsQ5JAiTI?alt=media&key=AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
-                                },
-                                "cover": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/15-Nf-3IoOk8s4KSPfYFozmLzqjHLcWKI?alt=media&key=AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
-                                }
-                            }
-            ,{
-                                "title": "10012_Reesha Raja",
-                                "pod_package_id": "0850X1100FCPRECW080CW444GXX",
-                                "quantity": 1,
-                                "interior": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1QxPFKmyfIlBLQia0VtMQ3Wxgi-a2Lnj-?alt=media&key=AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
-                                },
-                                "cover": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1ZFAl7_v-Zs2SIdDyrf8EGjUU0dDzB1T0?alt=media&key=AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
-                                }
-                            }
-            ,{
-                                "title": "10013_Remi Matsuda",
-                                "pod_package_id": "0850X1100FCPRECW080CW444GXX",
-                                "quantity": 1,
-                                "interior": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1K_8FEKtP6BI_6AbhYe9fYISZ3Z91NXZU?alt=media&key=AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
-                                },
-                                "cover": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1IC7sQc_xQ_e1I3NeJ2wS8mDJuf4Hxpy0?alt=media&key=AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
-                                }
-                            }
-            ,{
-                                "title": "10191_Siyuan (Eric) Ding",
-                                "pod_package_id": "0850X1100FCPRECW080CW444GXX",
-                                "quantity": 1,
-                                "interior": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1IdQim-AWRB8n91RzonkVuDbP4fz0Z8fQ?alt=media&key=AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
-                                },
-                                "cover": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1K07yfeD6Ce3Apot30-oXehHcUygFCrJj?alt=media&key=AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
-                                }
-                            }
-            ,{
-                                "title": "10034, 10133_Advik Gowda",
-                                "pod_package_id": "0850X1100FCPRECW080CW444GXX",
-                                "quantity": 1,
-                                "interior": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1HtfPL0ZEDGLmVQnoxOCk21KN5z1u9cqc?alt=media&key=AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
-                                },
-                                "cover": {
-                                    "source_url": "https://www.googleapis.com/drive/v3/files/1klxsPWWJVktlJJA9hNu34Q-rkk0aikyw?alt=media&key=AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
+                                    "source_url": "https://www.googleapis.com/drive/v3/files/1F0qat-phZ7kuKEdqMef8_vezGQnBVd2Z?alt=media&key=AIzaSyDC3t9lOmRPIootIOX0FiT31to6oPyVnEc"
                                 }
                             }
             ] ,
