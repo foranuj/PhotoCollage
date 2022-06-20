@@ -188,7 +188,7 @@ class PickleYearbook:
             return None
 
         for order in self.orders:
-            if order.cover_format == cover_format:
+            if order.cover_format.startswith(cover_format):
                 return order.interior_pdf_url
         return None
 
@@ -277,5 +277,10 @@ def pickle_yearbook(_yearbook: Yearbook, stub_dir: str):
     # Important to open the file in binary mode
     with open(pickle_filename, 'wb') as f:
         pickle.dump(_yearbook.pickle_yearbook, f)
+
+    try:
+        print(_yearbook.orders[0].get_details())
+    except IndexError:
+        print("There was no order for this yearbook ")
 
     print("Saved pickled yearbook here: ", pickle_filename)
