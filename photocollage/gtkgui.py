@@ -500,7 +500,7 @@ def draw_monticello_cover_details(canvas_cover, yearbook, cover_settings, basedi
 
     # Frames starting X co-ord is total page width - half the page size (4.75 inches) - half the frame size (3 inches)
     frame_x = cover_settings.get_page_size()[0] - (4.75 * inch) - (3 * inch)
-    frame1 = Frame(frame_x, 6.75 * inch, width, height, showBoundary=0)
+    frame1 = Frame(frame_x, 5.75 * inch, width, height, showBoundary=0)
     styles = getSampleStyleSheet()
     styles.add(
         ParagraphStyle(name='TitleStyle', fontName='EczarBold', fontSize=160, leading=200,
@@ -533,11 +533,11 @@ def draw_monticello_cover_details(canvas_cover, yearbook, cover_settings, basedi
     pil_img = Image.open(img)
     ratio = pil_img.size[1] / pil_img.size[0]
 
-    canvas_cover.drawImage(img, cover_settings.get_top_left_front_cover()[0] + 2.0 * inch, 1.9 * inch,
-                           width=3.25 * inch, height=3.25 * ratio * inch,
+    canvas_cover.drawImage(img, cover_settings.get_top_left_front_cover()[0] + 1.77 * inch, 1.65 * inch,
+                           width=3 * inch, height=3 * ratio * inch,
                            mask='auto')
 
-    frame2 = Frame(cover_settings.get_top_left_front_cover()[0] + 1.82 * inch, 0.36 * inch, width=3.6 * inch,
+    frame2 = Frame(cover_settings.get_top_left_front_cover()[0] + 1.52 * inch, 0.22 * inch, width=3.6 * inch,
                    height=1.5 * inch, showBoundary=0)
     name_in_frame = KeepInFrame(width, height, [Paragraph(yearbook.child, styles['ChildStyle'])])
     frame2.addFromList([name_in_frame], canvas_cover)
@@ -554,19 +554,16 @@ def stitch_print_ready_cover(pdf_path: str, yearbook: Yearbook, cover_settings: 
     cover_path_pdf = os.path.join(dirname, yearbook.get_file_id() + "_cover.pdf")
     front_cover_pdf_path = os.path.join(dirname, yearbook.get_file_id() + "_front_cover.pdf")
     back_cover_pdf_path = os.path.join(dirname, yearbook.get_file_id() + "_back_cover.pdf")
+    digital_cover_front_page_settings = get_cover_settings("Digital")
 
     canvas_cover = Canvas(cover_path_pdf, pagesize=cover_settings.get_page_size())
-    front_cover = Canvas(front_cover_pdf_path, pagesize=cover_settings.get_cover_img_dims())
+    front_cover = Canvas(front_cover_pdf_path, pagesize=digital_cover_front_page_settings.get_cover_img_dims())
     back_cover = Canvas(back_cover_pdf_path, pagesize=cover_settings.get_cover_img_dims())
 
     cover_img_dims = cover_settings.get_cover_img_dims()
 
     # First draw the back cover page
     top_left_back_cover = cover_settings.get_top_left_back_cover()
-    #with Image.open(yearbook.pages[-1].image) as im:
-    #    im.resize((int(cover_img_dims[0] * 300), (int(cover_img_dims[1] * 300))), Image.ANTIALIAS)
-    #    im.save(yearbook.pages[-1].image + "_resized.png", quality=95)
-
     canvas_cover.drawImage(yearbook.pages[-1].image, top_left_back_cover[0], top_left_back_cover[1],
                            width=cover_img_dims[0], height=cover_img_dims[1])
     back_cover.drawImage(yearbook.pages[-1].image, top_left_back_cover[0], top_left_back_cover[1],
@@ -580,11 +577,6 @@ def stitch_print_ready_cover(pdf_path: str, yearbook: Yearbook, cover_settings: 
                                                                      if "resized" not in img and ".png" in img][0])
                 back_cover_width = 3.625 * inch
                 back_cover_height = 4.75 * inch
-
-                #with Image.open(back_cover_img) as im:
-                #    im.resize((int(back_cover_width*300), int(back_cover_height*300)), Image.ANTIALIAS)
-                #    im.save(back_cover_img + "_resized.png", quality=95)
-
                 back_cover.drawImage(back_cover_img, 3.35 * inch, 3.9 * inch, width=back_cover_width,
                                      height=back_cover_height)
                 canvas_cover.drawImage(back_cover_img, 3.35 * inch, 3.9 * inch, width=back_cover_width,
@@ -594,9 +586,6 @@ def stitch_print_ready_cover(pdf_path: str, yearbook: Yearbook, cover_settings: 
     # Then draw the front cover page
     top_left_front_cover = cover_settings.get_top_left_front_cover()
 
-    #with Image.open(yearbook.pages[0].image) as im:
-    #    im.resize((int(cover_img_dims[0] * 300), (int(cover_img_dims[1] * 300))), Image.ANTIALIAS)
-    #    im.save(yearbook.pages[0].image + "_resized.png", quality=95)
     pil_img = Image.open(yearbook.pages[0].image)
     ratio = pil_img.size[1] / pil_img.size[0]
 
@@ -605,14 +594,15 @@ def stitch_print_ready_cover(pdf_path: str, yearbook: Yearbook, cover_settings: 
                            width=cover_img_dims[0],
                            height=cover_img_dims[0]*ratio)
     front_cover.drawImage(yearbook.pages[0].image, 0, 0,
-                          width=cover_img_dims[0],
-                          height=cover_img_dims[0]*ratio)
+                          width=digital_cover_front_page_settings.get_cover_img_dims()[0],
+                          height=digital_cover_front_page_settings.get_cover_img_dims()[0]*ratio)
 
     if yearbook.child is not None:
         draw_monticello_cover_details(canvas_cover, yearbook,
                                       cover_settings, basedir)
+
         draw_monticello_cover_details(front_cover, yearbook,
-                                      cover_settings, basedir)
+                                      digital_cover_front_page_settings, basedir)
         print("Finished drawing title")
 
     canvas_cover.save()
@@ -1686,19 +1676,17 @@ class MainWindow(Gtk.Window):
             print("Compressed PDF already exists... delete it if you want to create a new one")
             self.yearbook_to_file_map[_yearbook.get_id()] = compressed_out_path
 
-        # dirname = os.path.dirname(pdf_base_path)
+        dirname = os.path.dirname(pdf_base_path)
 
-        # merged_pdf_path = os.path.join(dirname, _yearbook.get_file_id() + "_merged.pdf")
-        # front_cover_path = os.path.join(dirname, _yearbook.get_file_id() + "_front_cover.pdf")
-        # back_cover_path = os.path.join(dirname, _yearbook.get_file_id() + "_back_cover.pdf")
+        merged_pdf_path = os.path.join(dirname, _yearbook.get_file_id() + "_merged.pdf")
+        front_cover_path = os.path.join(dirname, _yearbook.get_file_id() + "_front_cover.pdf")
+        back_cover_path = os.path.join(dirname, _yearbook.get_file_id() + "_back_cover.pdf")
 
-        # blank_pdf_path = os.path.join(self.yearbook_parameters['corpus_base_dir'], self.current_yearbook.school,
-        #                              'Theme', 'blank.pdf')
-        # create_pdf_with_cover_pages(merged_pdf_path, front_cover_path, self.yearbook_to_file_map[_yearbook.get_id()],
-        #                            back_cover_path, blank_pdf_path)
+        blank_pdf_path = os.path.join(self.yearbook_parameters['corpus_base_dir'], self.current_yearbook.school, 'Theme', 'blank.pdf')
+        create_pdf_with_cover_pages(merged_pdf_path, front_cover_path, self.yearbook_to_file_map[_yearbook.get_id()], back_cover_path, blank_pdf_path)
 
-        # compressed_output_path = os.path.join(dirname, _yearbook.get_file_id() + "_compressed_merged.pdf")
-        # compress(merged_pdf_path, compressed_output_path, power=1)
+        compressed_output_path = os.path.join(dirname, _yearbook.get_file_id() + "_compressed_merged.pdf")
+        compress(merged_pdf_path, compressed_output_path, power=3)
 
     def upload_printed_pdfs(self, store: Gtk.TreeStore, treepath: Gtk.TreePath, treeiter: Gtk.TreeIter):
         _yearbook: Yearbook = store[treeiter][0]
