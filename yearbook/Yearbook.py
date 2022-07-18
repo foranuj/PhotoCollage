@@ -37,7 +37,7 @@ def create_yearbook(dir_params: {}, school_name: str, classroom: str, child: str
             print(child_orders)
             _yearbook.pickle_yearbook.orders = [OrderDetails(wix_order_id=order[1], cover_format=order[0], student_id=order[2]) for order in child_orders]
 
-        if len(_yearbook.orders) == 0 and _yearbook.child is not None:
+        if len(_yearbook.pickle_yearbook.orders) == 0 and _yearbook.child is not None:
             print("SKIPPING YEARBOOK AS IT HAS NO ORDERS")
             _yearbook = None
 
