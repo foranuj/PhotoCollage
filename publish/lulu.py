@@ -16,6 +16,7 @@ job_details_url = lulu_base_url + "print-jobs/%s/"
 sandbox_print_job_url = sandbox_base_url + "print-jobs/"
 
 
+VARGAS_POD_ID = "0850X1100FCPREPB080CW444GXX"
 LULU_MONTICELLO_POD_ID = "0827X1169FCPRELW060UW444GNG"
 client_id = "4bae975e-030d-4da7-a320-c7e3441f4c41"
 client_secret = "d03ac1bd-32b2-43ba-902c-bb838b37e4ce"

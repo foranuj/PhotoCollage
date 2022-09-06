@@ -527,6 +527,7 @@ def draw_monticello_cover_details(canvas_cover, yearbook, cover_settings, basedi
     cover_img_dir = os.path.join(basedir, yearbook.school, "FrontCoverPhotos", yearbook.child)
     # Let's pick the first file from the dir and ignore the files that are rotated. We will
     # rotate the original file again
+
     cover_img_name = [img for img in os.listdir(cover_img_dir) if img.endswith(".png") and 'rotated' not in img][0]
     img = os.path.join(cover_img_dir, cover_img_name)
 
@@ -541,6 +542,60 @@ def draw_monticello_cover_details(canvas_cover, yearbook, cover_settings, basedi
                    height=1.5 * inch, showBoundary=0)
     name_in_frame = KeepInFrame(width, height, [Paragraph(yearbook.child, styles['ChildStyle'])])
     frame2.addFromList([name_in_frame], canvas_cover)
+
+
+def stitch_static_cover(pdf_path: str, yearbook: Yearbook, cover_settings: CoverSettings, basedir=None):
+    if cover_settings is None:
+        return None
+    print("Stitching static cover with basedir %s for " % basedir)
+    yearbook.print_yearbook_info()
+    dirname = os.path.dirname(pdf_path)
+    cover_path_pdf = os.path.join(dirname, yearbook.get_file_id() + "_cover.pdf")
+
+    try:
+        front_cover_pdf_path = os.path.join(dirname, yearbook.get_file_id() + "_front_cover.pdf")
+        back_cover_pdf_path = os.path.join(dirname, yearbook.get_file_id() + "_back_cover.pdf")
+
+        canvas_cover = Canvas(cover_path_pdf, pagesize=cover_settings.get_page_size())
+        front_cover = Canvas(front_cover_pdf_path, pagesize=cover_settings.get_cover_img_dims())
+        back_cover = Canvas(back_cover_pdf_path, pagesize=cover_settings.get_cover_img_dims())
+
+        cover_img_dims = cover_settings.get_cover_img_dims()
+
+        # First draw the back cover page
+        top_left_back_cover = cover_settings.get_top_left_back_cover()
+
+        cover_folder = os.path.join(basedir, 'MACovers')
+        back_cover_img = os.path.join(cover_folder, 'BackCover_' + yearbook.child.replace(" ", '') + ".png")
+        print("Back cover img will be %s " % back_cover_img)
+        canvas_cover.drawImage(back_cover_img, top_left_back_cover[0], top_left_back_cover[1],
+                           width=cover_img_dims[0], height=cover_img_dims[1])
+        back_cover.drawImage(back_cover_img, top_left_back_cover[0], top_left_back_cover[1],
+                         width=cover_img_dims[0], height=cover_img_dims[1])
+
+        front_cover_img = os.path.join(cover_folder, 'FrontCover_' + yearbook.child.replace(" ", '') + ".png")
+        print("Front cover img will be %s " % front_cover_img)
+
+        pil_img = Image.open(front_cover_img)
+        ratio = pil_img.size[1] / pil_img.size[0]
+        top_left_front_cover = cover_settings.get_top_left_front_cover()
+        canvas_cover.drawImage(front_cover_img, top_left_front_cover[0],
+                               top_left_front_cover[1],
+                               width=cover_img_dims[0],
+                               height=cover_img_dims[0]*ratio)
+        front_cover.drawImage(front_cover_img, 0, 0,
+                              width=cover_img_dims[0],
+                              height=cover_img_dims[0]*ratio)
+
+        canvas_cover.save()
+        front_cover.save()
+        back_cover.save()
+    except:
+
+        pass
+
+    print("Finished writing pdf here %s " % cover_path_pdf)
+    return cover_path_pdf
 
 
 def stitch_print_ready_cover(pdf_path: str, yearbook: Yearbook, cover_settings: CoverSettings, basedir=None):
@@ -608,12 +663,12 @@ def stitch_print_ready_cover(pdf_path: str, yearbook: Yearbook, cover_settings: 
                           width=cover_img_dims[0],
                           height=cover_img_dims[0]*ratio)
 
-    if yearbook.child is not None:
+    if yearbook.child is not None and 'Copy' not in yearbook.child:
         draw_monticello_cover_details(canvas_cover, yearbook,
                                       cover_settings, basedir)
         draw_monticello_cover_details(front_cover, yearbook,
                                       cover_settings, basedir)
-        print("Finished drawing title")
+        print("Finished drawing title %s " % yearbook.child)
 
     canvas_cover.save()
     front_cover.save()
@@ -660,7 +715,7 @@ class MainWindow(Gtk.Window):
         self.output_base_dir = os.path.join('/Users', getpass.getuser(), 'YearbookCreatorOut')
         self.input_base_dir = os.path.join(self.corpus_base_dir, 'YearbookCreatorInput')
         self.yearbook_parameters = {'max_count': 12,
-                                    'db_file_path': os.path.join(self.input_base_dir, 'RY_Monticello.db'),
+                                    'db_file_path': os.path.join(self.input_base_dir, 'RY_Monticello_July.db'),
                                     'output_dir': os.path.join(self.output_base_dir, getpass.getuser()),
                                     'corpus_base_dir': self.corpus_base_dir}
 
@@ -1671,9 +1726,8 @@ class MainWindow(Gtk.Window):
         pdf_base_path = self.get_pdf_base_path(_yearbook)
 
         cover_settings: CoverSettings = get_cover_settings("HardCover")
-        stitch_print_ready_cover(pdf_base_path + "_HardCover",
-                                 _yearbook, cover_settings,
-                                 self.yearbook_parameters['corpus_base_dir'])
+        stitch_print_ready_cover(pdf_base_path + "_HardCover", _yearbook, cover_settings,
+                            self.yearbook_parameters['corpus_base_dir'])
 
         pdf_full_path = pdf_base_path + "HardCover" + extension
         compressed_out_path = self.get_pdf_base_path(_yearbook) + "_compressed.pdf"
@@ -1725,9 +1779,9 @@ class MainWindow(Gtk.Window):
                 # Upload new cover
                 if cover_settings is not None:
                     print("STEP 2: Create_cover_pages with %s " % order.cover_format)
-                    cover_path = stitch_print_ready_cover(pdf_base_path + "_" + order.cover_format + extension,
-                                                          _yearbook, cover_settings,
-                                                          self.yearbook_parameters['corpus_base_dir'])
+                    cover_path = stitch_print_ready_cover(pdf_base_path + "_" + order.cover_format + extension, _yearbook,
+                                                     cover_settings,
+                                                     self.yearbook_parameters['corpus_base_dir'] )
                     # Upload the cover
                     order.cover_url = get_url_from_file_id(upload_with_item_check('1JYbuVmoCUxf1wuvkk8izPhC7jgRdR2rd',
                                                                                   cover_path,
